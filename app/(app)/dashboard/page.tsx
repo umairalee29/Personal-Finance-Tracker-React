@@ -186,74 +186,69 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Main grid */}
-      <div className="grid lg:grid-cols-5 gap-6">
-        {/* Left: Charts */}
-        <div className="lg:col-span-3 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Income vs Expenses</CardTitle>
-              <span className="text-xs text-slate-400">Last 6 months</span>
-            </CardHeader>
-            {trendsLoading ? <Skeleton className="h-60" /> : <TrendLineChart data={trends} currency={currency} />}
-          </Card>
+      {/* Trend chart — full width */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Income vs Expenses</CardTitle>
+          <span className="text-xs text-slate-400">Last 6 months</span>
+        </CardHeader>
+        {trendsLoading ? <Skeleton className="h-72" /> : <TrendLineChart data={trends} currency={currency} height={300} />}
+      </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Spending by Category</CardTitle>
-              <span className="text-xs text-slate-400">This month</span>
-            </CardHeader>
-            {catsLoading
-              ? <Skeleton className="h-60" />
-              : <SpendingPieChart data={categories} currency={currency} />}
-          </Card>
-        </div>
+      {/* Bottom grid: Spending | Budget Health | Recent Transactions */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Spending by Category</CardTitle>
+            <span className="text-xs text-slate-400">This month</span>
+          </CardHeader>
+          {catsLoading
+            ? <Skeleton className="h-60" />
+            : <SpendingPieChart data={categories} currency={currency} />}
+        </Card>
 
-        {/* Right: Budgets + Recent */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget Health</CardTitle>
-              <Link href="/budgets" className="text-xs text-primary dark:text-primary-300 hover:underline">
-                View all
-              </Link>
-            </CardHeader>
-            {budgetsLoading ? (
-              <div className="space-y-3">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-12" />)}</div>
-            ) : topBudgets.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-6">No budgets set up yet</p>
-            ) : (
-              <div className="space-y-4">
-                {topBudgets.map((b) => {
-                  const pct = b.percentageUsed ?? 0
-                  const cat = b.category as unknown as { icon?: string }
-                  return (
-                    <div key={String(b.id)}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          {cat?.icon ?? '💰'} {b.name}
-                        </span>
-                        <span className="text-xs text-slate-500">{pct.toFixed(0)}%</span>
-                      </div>
-                      <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className={`progress-bar ${getProgressColor(pct)}`}
-                          style={{ width: `${Math.min(100, pct)}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between mt-1">
-                        <span className="text-xs text-slate-400">{formatCurrency(b.spentAmount ?? 0, currency)}</span>
-                        <span className="text-xs text-slate-400">/{formatCurrency(b.limit, currency)}</span>
-                      </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Budget Health</CardTitle>
+            <Link href="/budgets" className="text-xs text-primary dark:text-primary-300 hover:underline">
+              View all
+            </Link>
+          </CardHeader>
+          {budgetsLoading ? (
+            <div className="space-y-3">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-12" />)}</div>
+          ) : topBudgets.length === 0 ? (
+            <p className="text-sm text-slate-400 text-center py-6">No budgets set up yet</p>
+          ) : (
+            <div className="space-y-4">
+              {topBudgets.map((b) => {
+                const pct = b.percentageUsed ?? 0
+                const cat = b.category as unknown as { icon?: string }
+                return (
+                  <div key={String(b.id)}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {cat?.icon ?? '💰'} {b.name}
+                      </span>
+                      <span className="text-xs text-slate-500">{pct.toFixed(0)}%</span>
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </Card>
+                    <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className={`progress-bar ${getProgressColor(pct)}`}
+                        style={{ width: `${Math.min(100, pct)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-xs text-slate-400">{formatCurrency(b.spentAmount ?? 0, currency)}</span>
+                      <span className="text-xs text-slate-400">/{formatCurrency(b.limit, currency)}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </Card>
 
-          <RecentTransactions currency={currency} />
-        </div>
+        <RecentTransactions currency={currency} />
       </div>
 
       {/* Heatmap */}
