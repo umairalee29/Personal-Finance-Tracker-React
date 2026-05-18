@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       className={`pt-14 pb-16 lg:pb-0 transition-all duration-300
                   ${collapsed ? 'lg:pl-16' : 'lg:pl-60'}`}
     >
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto">{children}</div>
+      <div className="px-1 sm:px-2 lg:px-3 xl:px-4 py-5 sm:py-6 max-w-7xl mx-auto">{children}</div>
     </main>
   )
 }
