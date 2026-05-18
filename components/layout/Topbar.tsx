@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '@/store'
 
 const PAGE_TITLES: Record<string, string> = {
@@ -19,6 +19,8 @@ export function Topbar() {
   const { data: session } = useSession()
   const { darkMode, setDarkMode, sidebarCollapsed } = useStore()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const title = PAGE_TITLES[pathname] ?? 'WealthLens'
 
@@ -28,7 +30,7 @@ export function Topbar() {
                   bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm
                   border-b border-slate-200 dark:border-slate-800
                   transition-all duration-300
-                  ${sidebarCollapsed ? 'left-16' : 'left-0 lg:left-60'}`}
+                  ${mounted && sidebarCollapsed ? 'left-16' : 'left-0 lg:left-60'}`}
     >
       <div className="flex items-center justify-between w-full px-4 gap-4">
         <h1 className="font-heading font-semibold text-slate-900 dark:text-slate-100 text-lg">

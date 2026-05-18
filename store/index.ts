@@ -46,6 +46,7 @@ export const useStore = create<WealthLensStore>()(
     }),
     {
       name: 'wealthlens-store',
+      skipHydration: true,
       partialize: (s) => ({ sidebarCollapsed: s.sidebarCollapsed, darkMode: s.darkMode }),
     }
   )

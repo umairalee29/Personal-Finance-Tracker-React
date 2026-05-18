@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 import { useStore } from '@/store'
 
 const NAV_ITEMS = [
@@ -17,18 +18,21 @@ export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { sidebarCollapsed, setSidebarCollapsed } = useStore()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const collapsed = mounted ? sidebarCollapsed : false
 
   return (
     <aside
       className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-30
                   bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
                   transition-all duration-300
-                  ${sidebarCollapsed ? 'w-16' : 'w-60'}`}
+                  ${collapsed ? 'w-16' : 'w-60'}`}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-200 dark:border-slate-800">
         <span className="text-2xl flex-shrink-0">💎</span>
-        {!sidebarCollapsed && (
+        {!collapsed && (
           <span className="font-heading font-bold text-lg bg-gradient-to-r from-primary to-primary-400 bg-clip-text text-transparent">
             WealthLens
           </span>
@@ -43,7 +47,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
-              title={sidebarCollapsed ? label : undefined}
+              title={collapsed ? label : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                          transition-all duration-150 group
                          ${active
@@ -52,8 +56,8 @@ export function Sidebar() {
                          }`}
             >
               <span className="text-lg flex-shrink-0">{icon}</span>
-              {!sidebarCollapsed && <span>{label}</span>}
-              {active && !sidebarCollapsed && (
+              {!collapsed && <span>{label}</span>}
+              {active && !collapsed && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
               )}
             </Link>
@@ -63,7 +67,7 @@ export function Sidebar() {
 
       {/* User + collapse toggle */}
       <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-2">
-        {session?.user && !sidebarCollapsed && (
+        {session?.user && !collapsed && (
           <div className="flex items-center gap-3 px-2 py-1.5">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {session.user.name?.charAt(0).toUpperCase()}
@@ -85,8 +89,8 @@ export function Sidebar() {
                      text-xs text-slate-500 dark:text-slate-400
                      hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <span>{sidebarCollapsed ? '→' : '←'}</span>
-          {!sidebarCollapsed && <span>Collapse</span>}
+          <span>{collapsed ? '→' : '←'}</span>
+          {!collapsed && <span>Collapse</span>}
         </button>
       </div>
     </aside>

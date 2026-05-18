@@ -1,12 +1,22 @@
 'use client'
 
+import { useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import { Toaster } from 'react-hot-toast'
 import type { ReactNode } from 'react'
+import { useStore } from '@/store'
+
+function StoreHydrator() {
+  useEffect(() => {
+    useStore.persist.rehydrate()
+  }, [])
+  return null
+}
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
+      <StoreHydrator />
       {children}
       <Toaster
         position="top-right"
