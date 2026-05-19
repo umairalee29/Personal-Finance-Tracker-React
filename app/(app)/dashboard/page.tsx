@@ -13,7 +13,67 @@ import {
   formatCurrency, formatDelta, getDeltaColor,
   getProgressColor, formatPercentage, formatDate, formatRelativeDate,
 } from '@/lib/formatters'
-import type { ITransaction } from '@/types'
+import type { ITransaction, IMonthlyTrend } from '@/types'
+
+const TREND_FILTERS = [
+  { label: 'Daily',    value: 'daily' },
+  { label: 'Weekly',   value: 'weekly' },
+  { label: 'Monthly',  value: 'monthly' },
+  { label: '6 Months', value: '6m' },
+  { label: '1 Year',   value: '1y' },
+] as const
+
+type TrendGranularity = typeof TREND_FILTERS[number]['value']
+
+function TrendCard({ initialTrends, isInitialLoading, currency }: {
+  initialTrends: IMonthlyTrend[]
+  isInitialLoading: boolean
+  currency: string
+}) {
+  const [granularity, setGranularity] = useState<TrendGranularity>('6m')
+  const [data, setData] = useState<IMonthlyTrend[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (granularity === '6m') {
+      setData(initialTrends)
+      setLoading(isInitialLoading)
+    }
+  }, [initialTrends, isInitialLoading, granularity])
+
+  useEffect(() => {
+    if (granularity === '6m') return
+    setLoading(true)
+    fetch(`/api/analytics/trends?granularity=${granularity}`)
+      .then((r) => r.json())
+      .then((j) => setData(j.data ?? []))
+      .finally(() => setLoading(false))
+  }, [granularity])
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Income vs Expenses</CardTitle>
+        <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-700/60 rounded-lg p-0.5">
+          {TREND_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setGranularity(f.value)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
+                granularity === f.value
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </CardHeader>
+      {loading ? <Skeleton className="h-72" /> : <TrendLineChart data={data} currency={currency} height={300} />}
+    </Card>
+  )
+}
 
 function SavingsRing({ rate }: { rate: number }) {
   const pct = Math.min(100, Math.max(0, rate))
@@ -143,7 +203,6 @@ export default function DashboardPage() {
   } = useDashboard()
 
   const summaryLoading = isLoading
-  const trendsLoading = isLoading
   const catsLoading = isLoading
   const heatmapLoading = isLoading
   const budgetsLoading = isLoading
@@ -254,13 +313,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Trend chart — full width */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Income vs Expenses</CardTitle>
-          <span className="text-xs text-slate-400">Last 6 months</span>
-        </CardHeader>
-        {trendsLoading ? <Skeleton className="h-72" /> : <TrendLineChart data={trends} currency={currency} height={300} />}
-      </Card>
+      <TrendCard initialTrends={trends} isInitialLoading={isLoading} currency={currency} />
 
       {/* Bottom grid: Spending | Budget Health | Recent Transactions */}
       <div className="grid lg:grid-cols-3 gap-6">

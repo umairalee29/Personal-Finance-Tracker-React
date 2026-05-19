@@ -1,4 +1,4 @@
-import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, eachDayOfInterval, format } from 'date-fns'
+import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, eachDayOfInterval, format, subDays, startOfDay, startOfWeek, subWeeks } from 'date-fns'
 import { Types } from 'mongoose'
 import type { PipelineStage } from 'mongoose'
 
@@ -96,6 +96,61 @@ export function buildTrendsPipeline(userId: string, months: number): PipelineSta
     {
       $sort: { '_id.year': 1, '_id.month': 1 } as Record<string, 1 | -1>,
     },
+  ] as PipelineStage[]
+}
+
+// ─── Daily Trends Pipeline ────────────────────────────────────────────────────
+
+export function buildDailyTrendsPipeline(userId: string, days: number): PipelineStage[] {
+  const userObjectId = new Types.ObjectId(userId)
+  const start = subDays(startOfDay(new Date()), days - 1)
+  return [
+    {
+      $match: {
+        userId: userObjectId,
+        date: { $gte: start },
+        type: { $in: ['income', 'expense'] },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$date' },
+          month: { $month: '$date' },
+          day: { $dayOfMonth: '$date' },
+          type: '$type',
+        },
+        total: { $sum: '$amount' },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } as Record<string, 1 | -1> },
+  ] as PipelineStage[]
+}
+
+// ─── Weekly Trends Pipeline ───────────────────────────────────────────────────
+
+export function buildWeeklyTrendsPipeline(userId: string, weeks: number): PipelineStage[] {
+  const userObjectId = new Types.ObjectId(userId)
+  const start = startOfWeek(subWeeks(new Date(), weeks - 1), { weekStartsOn: 1 })
+  return [
+    {
+      $match: {
+        userId: userObjectId,
+        date: { $gte: start },
+        type: { $in: ['income', 'expense'] },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $isoWeekYear: '$date' },
+          week: { $isoWeek: '$date' },
+          type: '$type',
+        },
+        total: { $sum: '$amount' },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.week': 1 } as Record<string, 1 | -1> },
   ] as PipelineStage[]
 }
 
