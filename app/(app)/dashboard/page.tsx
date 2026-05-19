@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { useSummary, useTrends, useCategoryBreakdown, useHeatmap } from '@/hooks/useAnalytics'
-import { useBudgets } from '@/hooks/useBudgets'
+import { useDashboard } from '@/hooks/useDashboard'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { SkeletonCard, Skeleton } from '@/components/ui/Skeleton'
 import { TrendLineChart } from '@/components/charts/TrendLineChart'
@@ -110,11 +109,22 @@ export default function DashboardPage() {
   const currency = session?.user?.currency ?? 'USD'
   const year = new Date().getFullYear()
 
-  const { summary, isLoading: summaryLoading } = useSummary()
-  const { trends, isLoading: trendsLoading } = useTrends('6m')
-  const { categories, isLoading: catsLoading } = useCategoryBreakdown()
-  const { data: heatmapData, maxTotal, isLoading: heatmapLoading } = useHeatmap(year)
-  const { budgets, alerts, isLoading: budgetsLoading } = useBudgets()
+  const {
+    summary,
+    trends,
+    categories,
+    heatmap: heatmapData,
+    maxTotal,
+    budgets,
+    alerts,
+    isLoading,
+  } = useDashboard()
+
+  const summaryLoading = isLoading
+  const trendsLoading = isLoading
+  const catsLoading = isLoading
+  const heatmapLoading = isLoading
+  const budgetsLoading = isLoading
 
   const topBudgets = budgets.slice(0, 4)
 
