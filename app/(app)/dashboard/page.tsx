@@ -114,9 +114,26 @@ export default function DashboardPage() {
   const { trends, isLoading: trendsLoading } = useTrends('6m')
   const { categories, isLoading: catsLoading } = useCategoryBreakdown()
   const { data: heatmapData, maxTotal, isLoading: heatmapLoading } = useHeatmap(year)
-  const { budgets, isLoading: budgetsLoading } = useBudgets()
+  const { budgets, alerts, isLoading: budgetsLoading } = useBudgets()
 
   const topBudgets = budgets.slice(0, 4)
+
+  const insight = (() => {
+    if (!summary) return null
+    const mom = summary.monthOverMonthChange ?? 0
+    const alertCount = alerts.length
+    const expenseText = mom === 0
+      ? 'Expenses are on par with last month'
+      : mom > 0
+      ? `Expenses are up ${Math.abs(mom).toFixed(0)}% vs last month`
+      : `Expenses are down ${Math.abs(mom).toFixed(0)}% vs last month`
+    const budgetText = alertCount === 0
+      ? 'all budgets are on track'
+      : alertCount === 1 ? '1 budget needs attention' : `${alertCount} budgets need attention`
+    const tone: 'green' | 'amber' | 'red' = (mom > 15 && alertCount > 0) ? 'red' : (mom > 5 || alertCount > 0) ? 'amber' : 'green'
+    const separator = alertCount === 0 && mom <= 0 ? ' and ' : ' — '
+    return { message: `${expenseText}${separator}${budgetText}.`, tone }
+  })()
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -128,6 +145,22 @@ export default function DashboardPage() {
           Here&apos;s your financial overview for this month.
         </p>
       </div>
+
+      {/* Insight strip */}
+      {!summaryLoading && !budgetsLoading && insight && (() => {
+        const styles: Record<'green' | 'amber' | 'red', string> = {
+          green: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300',
+          amber: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
+          red:   'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300',
+        }
+        const icons: Record<'green' | 'amber' | 'red', string> = { green: '✅', amber: '⚠️', red: '🚨' }
+        return (
+          <div className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-medium ${styles[insight.tone]}`}>
+            <span className="text-base flex-shrink-0">{icons[insight.tone]}</span>
+            <span>{insight.message}</span>
+          </div>
+        )
+      })()}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
