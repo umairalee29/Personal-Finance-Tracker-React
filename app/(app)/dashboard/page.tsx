@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useSummary, useTrends, useCategoryBreakdown, useHeatmap } from '@/hooks/useAnalytics'
 import { useBudgets } from '@/hooks/useBudgets'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { SkeletonCard, Skeleton } from '@/components/ui/Skeleton'
 import { TrendLineChart } from '@/components/charts/TrendLineChart'
 import { SpendingPieChart } from '@/components/charts/SpendingPieChart'
@@ -136,49 +135,52 @@ export default function DashboardPage() {
           Array.from({ length: 4 }, (_, i) => <SkeletonCard key={i} />)
         ) : (
           <>
-            <Card>
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-2xl">💚</span>
-                <Badge variant="income">Income</Badge>
-              </div>
+            {/* Income */}
+            <Card className="border-l-4 border-l-emerald-500">
+              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-3 uppercase tracking-wide">
+                Income
+              </p>
               <p className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100 tabular animate-value">
                 {formatCurrency(summary?.totalIncome ?? 0, currency)}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">This month</p>
             </Card>
 
-            <Card>
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-2xl">❤️</span>
-                <Badge variant="expense">Expenses</Badge>
-              </div>
+            {/* Expenses */}
+            <Card className="border-l-4 border-l-rose-500">
+              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-3 uppercase tracking-wide">
+                Expenses
+              </p>
               <p className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100 tabular animate-value">
                 {formatCurrency(summary?.totalExpenses ?? 0, currency)}
               </p>
-              <p className={`text-xs mt-1 ${getDeltaColor(-(summary?.monthOverMonthChange ?? 0))}`}>
+              <p className={`text-xs mt-1 font-medium ${getDeltaColor(-(summary?.monthOverMonthChange ?? 0))}`}>
                 {formatDelta(-(summary?.monthOverMonthChange ?? 0))} vs last month
               </p>
             </Card>
 
-            <Card>
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-2xl">💙</span>
-                <Badge variant={(summary?.netSavings ?? 0) >= 0 ? 'success' : 'danger'}>Savings</Badge>
-              </div>
+            {/* Net Savings */}
+            <Card className="border-l-4 border-l-blue-500">
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wide">
+                Net Savings
+              </p>
               <p className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100 tabular animate-value">
                 {formatCurrency(summary?.netSavings ?? 0, currency)}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Net this month</p>
+              <p className={`text-xs mt-1 font-medium ${(summary?.netSavings ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                {(summary?.netSavings ?? 0) >= 0 ? '↑ Positive' : '↓ Negative'} this month
+              </p>
             </Card>
 
-            <Card>
-              <div className="flex items-start justify-between mb-1">
-                <div>
-                  <p className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100 tabular animate-value">
-                    {formatPercentage(summary?.savingsRate ?? 0)}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Savings rate</p>
-                </div>
+            {/* Savings Rate */}
+            <Card className="border-l-4 border-l-primary">
+              <p className="text-xs font-semibold text-primary dark:text-primary-300 mb-1 uppercase tracking-wide">
+                Savings Rate
+              </p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100 tabular animate-value">
+                  {formatPercentage(summary?.savingsRate ?? 0)}
+                </p>
                 <SavingsRing rate={summary?.savingsRate ?? 0} />
               </div>
             </Card>
