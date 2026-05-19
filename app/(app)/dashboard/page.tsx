@@ -268,13 +268,27 @@ export default function DashboardPage() {
               {topBudgets.map((b) => {
                 const pct = b.percentageUsed ?? 0
                 const cat = b.category as unknown as { icon?: string }
+                const isOver = pct >= (b.alertThreshold ?? 80)
+                const isCritical = pct >= 100
+                const alertRing = isCritical
+                  ? 'ring-1 ring-rose-400 dark:ring-rose-500 bg-rose-50/60 dark:bg-rose-950/20'
+                  : isOver
+                  ? 'ring-1 ring-amber-400 dark:ring-amber-500 bg-amber-50/60 dark:bg-amber-950/20'
+                  : ''
                 return (
-                  <div key={String(b.id)}>
+                  <div key={String(b.id)} className={`rounded-lg px-3 py-2.5 -mx-3 transition-all duration-300 ${alertRing}`}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                         {cat?.icon ?? '💰'} {b.name}
+                        {isOver && (
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400' : 'bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400'}`}>
+                            {isCritical ? 'Over' : 'Alert'}
+                          </span>
+                        )}
                       </span>
-                      <span className="text-xs text-slate-500">{pct.toFixed(0)}%</span>
+                      <span className={`text-xs font-semibold ${isCritical ? 'text-rose-600 dark:text-rose-400' : isOver ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'}`}>
+                        {pct.toFixed(0)}%
+                      </span>
                     </div>
                     <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
