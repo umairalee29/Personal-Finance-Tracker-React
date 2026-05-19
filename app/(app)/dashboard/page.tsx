@@ -249,7 +249,7 @@ export default function DashboardPage() {
           </CardHeader>
           {catsLoading
             ? <Skeleton className="h-60" />
-            : <SpendingPieChart data={categories} currency={currency} />}
+            : <div className="mt-12"><SpendingPieChart data={categories} currency={currency} /></div>}
         </Card>
 
         <Card>

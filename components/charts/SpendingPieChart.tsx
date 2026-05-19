@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { formatCurrency, formatPercentage } from '@/lib/formatters'
 import type { ICategoryBreakdown } from '@/types'
@@ -33,14 +33,13 @@ function CustomTooltip({ active, payload, currency }: {
   )
 }
 
-function CustomLegend({ payload }: { payload?: Array<{ value: string; color: string; payload: ICategoryBreakdown }> }) {
-  if (!payload) return null
+function ExternalLegend({ data }: { data: ICategoryBreakdown[] }) {
   return (
-    <ul className="flex flex-wrap gap-2 justify-center mt-3">
-      {payload.map((entry) => (
-        <li key={entry.value} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+    <ul className="flex flex-wrap gap-2 justify-center mt-12">
+      {data.map((entry) => (
+        <li key={entry.categoryId} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: entry.color }} />
-          <span>{entry.payload.icon} {entry.value}</span>
+          <span>{entry.icon} {entry.category}</span>
         </li>
       ))}
     </ul>
@@ -57,25 +56,27 @@ export function SpendingPieChart({ data, currency = 'USD', height = 260, donut =
   }
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <PieChart>
-        <Pie
-          data={data}
-          dataKey="total"
-          nameKey="category"
-          cx="50%"
-          cy="50%"
-          outerRadius={donut ? 90 : 100}
-          innerRadius={donut ? 50 : 0}
-          paddingAngle={2}
-        >
-          {data.map((entry, i) => (
-            <Cell key={i} fill={entry.color} />
-          ))}
-        </Pie>
-        <Tooltip content={<CustomTooltip currency={currency} />} />
-        <Legend content={<CustomLegend />} />
-      </PieChart>
-    </ResponsiveContainer>
+    <>
+      <ResponsiveContainer width="100%" height={height}>
+        <PieChart>
+          <Pie
+            data={data}
+            dataKey="total"
+            nameKey="category"
+            cx="50%"
+            cy="50%"
+            outerRadius={donut ? 90 : 100}
+            innerRadius={donut ? 50 : 0}
+            paddingAngle={2}
+          >
+            {data.map((entry, i) => (
+              <Cell key={i} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip currency={currency} />} />
+        </PieChart>
+      </ResponsiveContainer>
+      <ExternalLegend data={data} />
+    </>
   )
 }
