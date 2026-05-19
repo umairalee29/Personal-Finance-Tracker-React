@@ -338,9 +338,75 @@ export default function DashboardPage() {
           <CardTitle>Spending Heatmap</CardTitle>
           <span className="text-xs text-slate-400">{year}</span>
         </CardHeader>
-        {heatmapLoading
-          ? <Skeleton className="h-36 w-full" />
-          : <HeatmapCalendar data={heatmapData} maxTotal={maxTotal} year={year} currency={currency} />}
+        {heatmapLoading ? (
+          <Skeleton className="h-36 w-full" />
+        ) : (() => {
+          const activeDays = heatmapData.filter((d) => d.total > 0).length
+          const busiestDay = heatmapData.reduce(
+            (max, d) => (d.total > max.total ? d : max),
+            heatmapData[0] ?? { date: '', total: 0, count: 0 }
+          )
+          const monthTotals: Record<string, number> = {}
+          heatmapData.forEach((d) => {
+            const m = d.date.slice(0, 7)
+            monthTotals[m] = (monthTotals[m] ?? 0) + d.total
+          })
+          const peakEntry = Object.entries(monthTotals).sort(([, a], [, b]) => b - a)[0]
+          const peakMonthLabel = peakEntry
+            ? new Date(peakEntry[0] + '-01').toLocaleString('default', { month: 'long' })
+            : '—'
+          const peakMonthAmount = peakEntry ? peakEntry[1] : 0
+
+          const stats = [
+            {
+              icon: '🔥',
+              label: 'Busiest day',
+              value: busiestDay.date ? formatDate(busiestDay.date, 'MMM d') : '—',
+              sub: busiestDay.total > 0 ? formatCurrency(busiestDay.total, currency) : 'No data',
+            },
+            {
+              icon: '📅',
+              label: 'Active days',
+              value: String(activeDays),
+              sub: `of ${new Date(year, 1, 29).getMonth() === 1 ? 366 : 365} days`,
+            },
+            {
+              icon: '📈',
+              label: 'Peak month',
+              value: peakMonthLabel,
+              sub: peakMonthAmount > 0 ? formatCurrency(peakMonthAmount, currency) : 'No data',
+            },
+          ]
+
+          return (
+            <>
+              <div className="flex flex-wrap gap-3 mb-5">
+                {stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg
+                               bg-slate-50 dark:bg-slate-700/40
+                               border border-slate-200 dark:border-slate-700"
+                  >
+                    <span className="text-lg">{s.icon}</span>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                        {s.label}
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
+                        {s.value}
+                        <span className="ml-1.5 text-xs font-normal text-slate-500 dark:text-slate-400">
+                          {s.sub}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <HeatmapCalendar data={heatmapData} maxTotal={maxTotal} year={year} currency={currency} />
+            </>
+          )
+        })()}
       </Card>
     </div>
   )
