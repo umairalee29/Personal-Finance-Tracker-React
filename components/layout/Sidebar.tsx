@@ -30,7 +30,7 @@ export function Sidebar() {
                   ${collapsed ? 'w-16' : 'w-60'}`}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center gap-3 px-4 h-14 flex-shrink-0 border-b border-slate-200 dark:border-slate-800">
         <span className="text-2xl flex-shrink-0">💎</span>
         {!collapsed && (
           <span className="font-heading font-bold text-lg bg-gradient-to-r from-primary to-primary-400 bg-clip-text text-transparent">
