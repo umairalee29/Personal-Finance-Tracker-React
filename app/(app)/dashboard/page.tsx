@@ -297,12 +297,12 @@ function SavingsRing({ rate }: { rate: number }) {
   )
 }
 
-function RecentTransactions({ currency }: { currency: string }) {
+function RecentTransactions({ currency, className = '' }: { currency: string; className?: string }) {
   const [transactions, setTransactions] = useState<ITransaction[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/transactions?limit=5&sortBy=date&sortDir=desc')
+    fetch('/api/transactions?limit=4&sortBy=date&sortDir=desc')
       .then((r) => r.json())
       .then((j) => setTransactions(j.data ?? []))
       .finally(() => setLoading(false))
@@ -320,7 +320,7 @@ function RecentTransactions({ currency }: { currency: string }) {
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Recent Transactions</CardTitle>
         <Link href="/transactions" className="text-xs text-primary dark:text-primary-300 hover:underline">
@@ -573,16 +573,20 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Transactions — full width */}
-      <RecentTransactions currency={currency} />
-
-      {/* Heatmap */}
-      <HeatmapCard
-        initialData={heatmapData}
-        initialMaxTotal={maxTotal}
-        isInitialLoading={isLoading}
-        currency={currency}
-      />
+      {/* Heatmap (3/4) + Recent Transactions (1/4) */}
+      <div className="grid lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <HeatmapCard
+            initialData={heatmapData}
+            initialMaxTotal={maxTotal}
+            isInitialLoading={isLoading}
+            currency={currency}
+          />
+        </div>
+        <div className="lg:col-span-1 flex flex-col">
+          <RecentTransactions currency={currency} className="flex-1" />
+        </div>
+      </div>
     </div>
   )
 }
