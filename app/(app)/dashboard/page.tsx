@@ -342,7 +342,7 @@ function RecentTransactions({ currency }: { currency: string }) {
               </p>
               <div className="space-y-2">
                 {group.items.map((t) => {
-                  const cat = t.categoryId as unknown as { icon?: string }
+                  const cat = t.categoryId as unknown as { icon?: string; name?: string }
                   const isIncome = t.type === 'income'
                   return (
                     <div
@@ -358,6 +358,11 @@ function RecentTransactions({ currency }: { currency: string }) {
                         <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                           {t.description}
                         </p>
+                        {cat?.name && (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                            {cat.name}
+                          </p>
+                        )}
                       </div>
                       <span className={`text-sm font-semibold tabular-nums flex-shrink-0 ${
                         isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
