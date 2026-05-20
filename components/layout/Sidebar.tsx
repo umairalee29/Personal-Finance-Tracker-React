@@ -19,35 +19,43 @@ export function Sidebar() {
   const { data: session } = useSession()
   const { sidebarCollapsed, setSidebarCollapsed } = useStore()
   const [mounted, setMounted] = useState(false)
+  const [hovered, setHovered] = useState(false)
   useEffect(() => setMounted(true), [])
+
   const collapsed = mounted ? sidebarCollapsed : false
+  const expanded = !collapsed || hovered
 
   return (
     <aside
-      className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-30
+      onMouseEnter={() => collapsed && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`hidden lg:flex flex-col fixed inset-y-0 left-0
                   bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
-                  transition-all duration-300
-                  ${collapsed ? 'w-16' : 'w-60'}`}
+                  transition-all duration-300 ease-in-out overflow-hidden
+                  ${expanded ? 'w-60' : 'w-16'}
+                  ${collapsed && hovered ? 'shadow-2xl z-40' : 'z-30'}`}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-14 flex-shrink-0 border-b border-slate-200 dark:border-slate-800">
         <span className="text-2xl flex-shrink-0">💎</span>
-        {!collapsed && (
-          <span className="font-heading font-bold text-lg bg-gradient-to-r from-primary to-primary-400 bg-clip-text text-transparent">
-            WealthLens
-          </span>
-        )}
+        <span
+          className={`font-heading font-bold text-lg bg-gradient-to-r from-primary to-primary-400
+                      bg-clip-text text-transparent whitespace-nowrap
+                      transition-all duration-300
+                      ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}`}
+        >
+          WealthLens
+        </span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {NAV_ITEMS.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link
               key={href}
               href={href}
-              title={collapsed ? label : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                          transition-all duration-150 group
                          ${active
@@ -56,9 +64,18 @@ export function Sidebar() {
                          }`}
             >
               <span className="text-lg flex-shrink-0">{icon}</span>
-              {!collapsed && <span>{label}</span>}
-              {active && !collapsed && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+              <span
+                className={`whitespace-nowrap transition-all duration-300
+                            ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}`}
+              >
+                {label}
+              </span>
+              {active && (
+                <span
+                  className={`ml-auto w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0
+                              transition-all duration-300
+                              ${expanded ? 'opacity-100' : 'opacity-0'}`}
+                />
               )}
             </Link>
           )
@@ -67,8 +84,12 @@ export function Sidebar() {
 
       {/* User + collapse toggle */}
       <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-2">
-        {session?.user && !collapsed && (
-          <div className="flex items-center gap-3 px-2 py-1.5">
+        {session?.user && (
+          <div
+            className={`flex items-center gap-3 px-2 py-1.5 overflow-hidden
+                        transition-all duration-300
+                        ${expanded ? 'opacity-100' : 'opacity-0 h-0 py-0 pointer-events-none'}`}
+          >
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {session.user.name?.charAt(0).toUpperCase()}
             </div>
@@ -84,13 +105,18 @@ export function Sidebar() {
         )}
 
         <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onClick={() => { setSidebarCollapsed(!sidebarCollapsed); setHovered(false) }}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                      text-xs text-slate-500 dark:text-slate-400
                      hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <span>{collapsed ? '→' : '←'}</span>
-          {!collapsed && <span>Collapse</span>}
+          <span className="flex-shrink-0">{collapsed ? '→' : '←'}</span>
+          <span
+            className={`whitespace-nowrap transition-all duration-300
+                        ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}`}
+          >
+            Collapse
+          </span>
         </button>
       </div>
     </aside>
