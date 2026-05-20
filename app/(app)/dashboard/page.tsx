@@ -13,7 +13,88 @@ import {
   formatCurrency, formatDelta, getDeltaColor,
   getProgressColor, formatPercentage, formatDate, formatRelativeDate,
 } from '@/lib/formatters'
-import type { ITransaction, IMonthlyTrend } from '@/types'
+import type { ITransaction, IMonthlyTrend, ICategoryBreakdown } from '@/types'
+
+const CAT_FILTERS = [
+  { label: 'This Month', value: 'this-month' },
+  { label: '3 Months',   value: '3m' },
+  { label: '6 Months',   value: '6m' },
+  { label: 'This Year',  value: 'this-year' },
+] as const
+
+type CatPeriod = typeof CAT_FILTERS[number]['value']
+
+function getCatDateRange(period: CatPeriod): { startDate: string; endDate: string } {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = now.getMonth()
+  const monthEnd = new Date(y, m + 1, 0, 23, 59, 59).toISOString()
+  if (period === '3m') return { startDate: new Date(y, m - 2, 1).toISOString(), endDate: monthEnd }
+  if (period === '6m') return { startDate: new Date(y, m - 5, 1).toISOString(), endDate: monthEnd }
+  if (period === 'this-year') return { startDate: new Date(y, 0, 1).toISOString(), endDate: new Date(y, 11, 31, 23, 59, 59).toISOString() }
+  return { startDate: new Date(y, m, 1).toISOString(), endDate: monthEnd }
+}
+
+function CategoryCard({ initialCategories, isInitialLoading, currency }: {
+  initialCategories: ICategoryBreakdown[]
+  isInitialLoading: boolean
+  currency: string
+}) {
+  const [period, setPeriod] = useState<CatPeriod>('this-month')
+  const [data, setData] = useState<ICategoryBreakdown[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (period === 'this-month') {
+      setData(initialCategories)
+      setLoading(isInitialLoading)
+    }
+  }, [initialCategories, isInitialLoading, period])
+
+  useEffect(() => {
+    if (period === 'this-month') return
+    const { startDate, endDate } = getCatDateRange(period)
+    setLoading(true)
+    fetch(`/api/analytics/categories?startDate=${startDate}&endDate=${endDate}`)
+      .then((r) => r.json())
+      .then((j) => setData(j.data ?? []))
+      .finally(() => setLoading(false))
+  }, [period])
+
+  return (
+    <Card>
+      <CardHeader className="mb-2">
+        <CardTitle>Spending by Category</CardTitle>
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value as CatPeriod)}
+          className="cursor-pointer appearance-none text-xs font-medium
+                     bg-slate-50 dark:bg-slate-700/60
+                     border border-slate-200 dark:border-slate-600
+                     text-slate-700 dark:text-slate-300
+                     rounded-lg px-3 py-1.5
+                     hover:border-primary dark:hover:border-primary-400 hover:bg-white dark:hover:bg-slate-700
+                     focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+                     transition-all duration-150"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 0.4rem center',
+            backgroundSize: '0.85rem',
+            paddingRight: '1.6rem',
+          }}
+        >
+          {CAT_FILTERS.map((f) => (
+            <option key={f.value} value={f.value}>{f.label}</option>
+          ))}
+        </select>
+      </CardHeader>
+      {loading
+        ? <Skeleton className="h-60" />
+        : <div className="mt-12"><SpendingPieChart data={data} currency={currency} /></div>}
+    </Card>
+  )
+}
 
 const TREND_FILTERS = [
   { label: 'Daily',    value: 'daily' },
@@ -203,7 +284,6 @@ export default function DashboardPage() {
   } = useDashboard()
 
   const summaryLoading = isLoading
-  const catsLoading = isLoading
   const heatmapLoading = isLoading
   const budgetsLoading = isLoading
 
@@ -317,15 +397,7 @@ export default function DashboardPage() {
 
       {/* Bottom grid: Spending | Budget Health | Recent Transactions */}
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Spending by Category</CardTitle>
-            <span className="text-xs text-slate-400">This month</span>
-          </CardHeader>
-          {catsLoading
-            ? <Skeleton className="h-60" />
-            : <div className="mt-12"><SpendingPieChart data={categories} currency={currency} /></div>}
-        </Card>
+        <CategoryCard initialCategories={categories} isInitialLoading={isLoading} currency={currency} />
 
         <Card>
           <CardHeader>
