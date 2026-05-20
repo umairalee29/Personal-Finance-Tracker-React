@@ -83,17 +83,19 @@ export function Sidebar() {
       </nav>
 
       {/* User + collapse toggle */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-2">
+      <div className="border-t border-slate-200 dark:border-slate-800 py-3 px-2 space-y-2">
         {session?.user && (
-          <div
-            className={`flex items-center gap-3 px-2 py-1.5 overflow-hidden
-                        transition-all duration-300
-                        ${expanded ? 'opacity-100' : 'opacity-0 h-0 py-0 pointer-events-none'}`}
-          >
+          <div className={`flex items-center py-1 overflow-hidden transition-all duration-300
+                           ${expanded ? 'gap-3 px-1' : 'justify-center'}`}>
+            {/* Avatar always visible */}
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {session.user.name?.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
+            {/* Name + email — zero width when collapsed so no layout shift */}
+            <div
+              className={`min-w-0 overflow-hidden transition-all duration-300
+                          ${expanded ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}
+            >
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                 {session.user.name}
               </p>
@@ -106,14 +108,23 @@ export function Sidebar() {
 
         <button
           onClick={() => { setSidebarCollapsed(!sidebarCollapsed); setHovered(false) }}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                     text-xs text-slate-500 dark:text-slate-400
-                     hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className={`w-full flex items-center justify-center py-2 rounded-lg ${expanded ? 'gap-2' : ''}
+                     text-xs font-medium text-slate-500 dark:text-slate-400
+                     border border-slate-200 dark:border-slate-700
+                     hover:bg-slate-100 dark:hover:bg-slate-800
+                     hover:text-slate-700 dark:hover:text-slate-200
+                     hover:border-slate-300 dark:hover:border-slate-600
+                     transition-all duration-150`}
         >
-          <span className="flex-shrink-0">{collapsed ? '→' : '←'}</span>
+          <svg
+            className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${collapsed ? 'rotate-0' : 'rotate-180'}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
           <span
-            className={`whitespace-nowrap transition-all duration-300
-                        ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}`}
+            className={`whitespace-nowrap overflow-hidden transition-all duration-300
+                        ${expanded ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}
           >
             Collapse
           </span>
