@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useFilteredFetch } from '@/hooks/useFilteredFetch'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { SkeletonCard, Skeleton } from '@/components/ui/Skeleton'
@@ -16,8 +17,63 @@ import {
 } from '@/lib/formatters'
 import type { ITransaction, IMonthlyTrend, ICategoryBreakdown, IHeatmapDay } from '@/types'
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
 const CURRENT_YEAR = new Date().getFullYear()
 const HEATMAP_YEARS = [CURRENT_YEAR - 3, CURRENT_YEAR - 2, CURRENT_YEAR - 1, CURRENT_YEAR]
+
+const CAT_FILTERS = [
+  { label: 'This Month', value: 'this-month' },
+  { label: '3 Months',   value: '3m' },
+  { label: '6 Months',   value: '6m' },
+  { label: 'This Year',  value: 'this-year' },
+] as const
+
+const TREND_FILTERS = [
+  { label: 'Daily',    value: 'daily' },
+  { label: 'Weekly',   value: 'weekly' },
+  { label: 'Monthly',  value: 'monthly' },
+  { label: '6 Months', value: '6m' },
+  { label: '1 Year',   value: '1y' },
+] as const
+
+type CatPeriod       = typeof CAT_FILTERS[number]['value']
+type TrendGranularity = typeof TREND_FILTERS[number]['value']
+type HeatmapResult   = { data: IHeatmapDay[]; maxTotal: number }
+
+// ─── Module-level fetchers (stable references — no useCallback needed) ────────
+
+function getCatDateRange(period: CatPeriod) {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = now.getMonth()
+  const end = new Date(y, m + 1, 0, 23, 59, 59).toISOString()
+  if (period === '3m')        return { startDate: new Date(y, m - 2, 1).toISOString(), endDate: end }
+  if (period === '6m')        return { startDate: new Date(y, m - 5, 1).toISOString(), endDate: end }
+  if (period === 'this-year') return { startDate: new Date(y, 0, 1).toISOString(), endDate: new Date(y, 11, 31, 23, 59, 59).toISOString() }
+  return { startDate: new Date(y, m, 1).toISOString(), endDate: end }
+}
+
+async function fetchTrends(granularity: TrendGranularity): Promise<IMonthlyTrend[]> {
+  const res = await fetch(`/api/analytics/trends?granularity=${granularity}`)
+  const json = await res.json()
+  return json.data ?? []
+}
+
+async function fetchCategories(period: CatPeriod): Promise<ICategoryBreakdown[]> {
+  const { startDate, endDate } = getCatDateRange(period)
+  const res = await fetch(`/api/analytics/categories?startDate=${startDate}&endDate=${endDate}`)
+  const json = await res.json()
+  return json.data ?? []
+}
+
+async function fetchHeatmap(year: number): Promise<HeatmapResult> {
+  const res = await fetch(`/api/analytics/heatmap?year=${year}`)
+  const json = await res.json()
+  return { data: json.data ?? [], maxTotal: json.maxTotal ?? 1 }
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function HeatmapCard({ initialData, initialMaxTotal, isInitialLoading, currency }: {
   initialData: IHeatmapDay[]
@@ -26,26 +82,16 @@ function HeatmapCard({ initialData, initialMaxTotal, isInitialLoading, currency 
   currency: string
 }) {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
-  const [data, setData] = useState<IHeatmapDay[]>([])
-  const [maxTotal, setMaxTotal] = useState(1)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (selectedYear === CURRENT_YEAR) {
-      setData(initialData)
-      setMaxTotal(initialMaxTotal)
-      setLoading(isInitialLoading)
-    }
-  }, [initialData, initialMaxTotal, isInitialLoading, selectedYear])
+  const { data: result, loading } = useFilteredFetch<HeatmapResult, number>({
+    defaultValue: CURRENT_YEAR,
+    filter: selectedYear,
+    initialData: { data: initialData, maxTotal: initialMaxTotal },
+    isInitialLoading,
+    fetcher: fetchHeatmap,
+  })
 
-  useEffect(() => {
-    if (selectedYear === CURRENT_YEAR) return
-    setLoading(true)
-    fetch(`/api/analytics/heatmap?year=${selectedYear}`)
-      .then((r) => r.json())
-      .then((j) => { setData(j.data ?? []); setMaxTotal(j.maxTotal ?? 1) })
-      .finally(() => setLoading(false))
-  }, [selectedYear])
+  const { data, maxTotal } = result
 
   const activeDays = data.filter((d) => d.total > 0).length
   const busiestDay = data.reduce(
@@ -139,51 +185,20 @@ function HeatmapCard({ initialData, initialMaxTotal, isInitialLoading, currency 
   )
 }
 
-const CAT_FILTERS = [
-  { label: 'This Month', value: 'this-month' },
-  { label: '3 Months',   value: '3m' },
-  { label: '6 Months',   value: '6m' },
-  { label: 'This Year',  value: 'this-year' },
-] as const
-
-type CatPeriod = typeof CAT_FILTERS[number]['value']
-
-function getCatDateRange(period: CatPeriod): { startDate: string; endDate: string } {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = now.getMonth()
-  const monthEnd = new Date(y, m + 1, 0, 23, 59, 59).toISOString()
-  if (period === '3m') return { startDate: new Date(y, m - 2, 1).toISOString(), endDate: monthEnd }
-  if (period === '6m') return { startDate: new Date(y, m - 5, 1).toISOString(), endDate: monthEnd }
-  if (period === 'this-year') return { startDate: new Date(y, 0, 1).toISOString(), endDate: new Date(y, 11, 31, 23, 59, 59).toISOString() }
-  return { startDate: new Date(y, m, 1).toISOString(), endDate: monthEnd }
-}
-
 function CategoryCard({ initialCategories, isInitialLoading, currency }: {
   initialCategories: ICategoryBreakdown[]
   isInitialLoading: boolean
   currency: string
 }) {
   const [period, setPeriod] = useState<CatPeriod>('this-month')
-  const [data, setData] = useState<ICategoryBreakdown[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (period === 'this-month') {
-      setData(initialCategories)
-      setLoading(isInitialLoading)
-    }
-  }, [initialCategories, isInitialLoading, period])
-
-  useEffect(() => {
-    if (period === 'this-month') return
-    const { startDate, endDate } = getCatDateRange(period)
-    setLoading(true)
-    fetch(`/api/analytics/categories?startDate=${startDate}&endDate=${endDate}`)
-      .then((r) => r.json())
-      .then((j) => setData(j.data ?? []))
-      .finally(() => setLoading(false))
-  }, [period])
+  const { data, loading } = useFilteredFetch<ICategoryBreakdown[], CatPeriod>({
+    defaultValue: 'this-month',
+    filter: period,
+    initialData: initialCategories,
+    isInitialLoading,
+    fetcher: fetchCategories,
+  })
 
   return (
     <Card>
@@ -202,40 +217,20 @@ function CategoryCard({ initialCategories, isInitialLoading, currency }: {
   )
 }
 
-const TREND_FILTERS = [
-  { label: 'Daily',    value: 'daily' },
-  { label: 'Weekly',   value: 'weekly' },
-  { label: 'Monthly',  value: 'monthly' },
-  { label: '6 Months', value: '6m' },
-  { label: '1 Year',   value: '1y' },
-] as const
-
-type TrendGranularity = typeof TREND_FILTERS[number]['value']
-
 function TrendCard({ initialTrends, isInitialLoading, currency }: {
   initialTrends: IMonthlyTrend[]
   isInitialLoading: boolean
   currency: string
 }) {
   const [granularity, setGranularity] = useState<TrendGranularity>('6m')
-  const [data, setData] = useState<IMonthlyTrend[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (granularity === '6m') {
-      setData(initialTrends)
-      setLoading(isInitialLoading)
-    }
-  }, [initialTrends, isInitialLoading, granularity])
-
-  useEffect(() => {
-    if (granularity === '6m') return
-    setLoading(true)
-    fetch(`/api/analytics/trends?granularity=${granularity}`)
-      .then((r) => r.json())
-      .then((j) => setData(j.data ?? []))
-      .finally(() => setLoading(false))
-  }, [granularity])
+  const { data, loading } = useFilteredFetch<IMonthlyTrend[], TrendGranularity>({
+    defaultValue: '6m',
+    filter: granularity,
+    initialData: initialTrends,
+    isInitialLoading,
+    fetcher: fetchTrends,
+  })
 
   return (
     <Card>
@@ -304,7 +299,6 @@ function RecentTransactions({ currency }: { currency: string }) {
       .finally(() => setLoading(false))
   }, [])
 
-  // Group transactions by calendar date, display relative label as header
   const groups: { label: string; items: ITransaction[] }[] = []
   const seen = new Map<string, number>()
   for (const t of transactions) {
@@ -373,6 +367,8 @@ function RecentTransactions({ currency }: { currency: string }) {
   )
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function DashboardPage() {
   const { data: session } = useSession()
   const currency = session?.user?.currency ?? 'USD'
@@ -387,9 +383,6 @@ export default function DashboardPage() {
     alerts,
     isLoading,
   } = useDashboard()
-
-  const summaryLoading = isLoading
-  const budgetsLoading = isLoading
 
   const topBudgets = budgets.slice(0, 4)
 
@@ -422,7 +415,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Insight strip */}
-      {!summaryLoading && !budgetsLoading && insight && (() => {
+      {!isLoading && insight && (() => {
         const styles: Record<'green' | 'amber' | 'red', string> = {
           green: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300',
           amber: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
@@ -439,11 +432,10 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {summaryLoading ? (
+        {isLoading ? (
           Array.from({ length: 4 }, (_, i) => <SkeletonCard key={i} />)
         ) : (
           <>
-            {/* Income */}
             <Card className="border-l-4 border-l-emerald-500">
               <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-3 uppercase tracking-wide">
                 Income
@@ -454,7 +446,6 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">This month</p>
             </Card>
 
-            {/* Expenses */}
             <Card className="border-l-4 border-l-rose-500">
               <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-3 uppercase tracking-wide">
                 Expenses
@@ -467,7 +458,6 @@ export default function DashboardPage() {
               </p>
             </Card>
 
-            {/* Net Savings */}
             <Card className="border-l-4 border-l-blue-500">
               <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wide">
                 Net Savings
@@ -480,9 +470,8 @@ export default function DashboardPage() {
               </p>
             </Card>
 
-            {/* Savings Rate */}
             <Card className="border-l-4 border-l-primary">
-              <p className="text-xs font-semibold text-primary dark:text-primary-300 mb-1 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-primary dark:text-primary-300 mb-3 uppercase tracking-wide">
                 Savings Rate
               </p>
               <div className="flex items-center justify-between mt-2">
@@ -510,7 +499,7 @@ export default function DashboardPage() {
               View all
             </Link>
           </CardHeader>
-          {budgetsLoading ? (
+          {isLoading ? (
             <div className="space-y-3">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : topBudgets.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-6">No budgets set up yet</p>
