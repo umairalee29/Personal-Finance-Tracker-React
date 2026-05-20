@@ -508,8 +508,8 @@ export default function DashboardPage() {
       {/* Trend chart — full width */}
       <TrendCard initialTrends={trends} isInitialLoading={isLoading} currency={currency} />
 
-      {/* Bottom grid: Spending | Budget Health | Recent Transactions */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      {/* Bottom grid: Spending | Budget Health (top row) + Recent Transactions (full width) */}
+      <div className="grid lg:grid-cols-2 gap-6">
         <CategoryCard initialCategories={categories} isInitialLoading={isLoading} currency={currency} />
 
         <Card>
@@ -566,9 +566,10 @@ export default function DashboardPage() {
             </div>
           )}
         </Card>
-
-        <RecentTransactions currency={currency} />
       </div>
+
+      {/* Recent Transactions — full width */}
+      <RecentTransactions currency={currency} />
 
       {/* Heatmap */}
       <HeatmapCard
