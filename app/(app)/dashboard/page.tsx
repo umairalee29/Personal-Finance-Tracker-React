@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useDashboard } from '@/hooks/useDashboard'
 import { useFilteredFetch } from '@/hooks/useFilteredFetch'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Dropdown } from '@/components/ui/Dropdown'
 import { SkeletonCard, Skeleton } from '@/components/ui/Skeleton'
 import { TrendLineChart } from '@/components/charts/TrendLineChart'
 import { SpendingPieChart } from '@/components/charts/SpendingPieChart'
@@ -204,11 +203,21 @@ function CategoryCard({ initialCategories, isInitialLoading, currency }: {
     <Card>
       <CardHeader className="mb-2">
         <CardTitle>Spending by Category</CardTitle>
-        <Dropdown
-          options={CAT_FILTERS as unknown as { label: string; value: string }[]}
-          value={period}
-          onChange={(v) => setPeriod(v as CatPeriod)}
-        />
+        <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-700/60 rounded-lg p-0.5">
+          {CAT_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setPeriod(f.value)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
+                period === f.value
+                  ? 'bg-primary text-white shadow-md shadow-primary/25'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </CardHeader>
       {loading
         ? <Skeleton className="h-60" />
@@ -243,7 +252,7 @@ function TrendCard({ initialTrends, isInitialLoading, currency }: {
               onClick={() => setGranularity(f.value)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
                 granularity === f.value
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                  ? 'bg-primary text-white shadow-md shadow-primary/25'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
@@ -367,6 +376,15 @@ function RecentTransactions({ currency }: { currency: string }) {
   )
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -407,7 +425,7 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100">
-          Good day, {session?.user?.name?.split(' ')[0]} 👋
+          {getGreeting()}, {session?.user?.name?.split(' ')[0]} 👋
         </h2>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
           Here&apos;s your financial overview for this month.
@@ -443,7 +461,9 @@ export default function DashboardPage() {
               <p className="font-heading font-bold text-2xl text-slate-900 dark:text-slate-100 tabular animate-value">
                 {formatCurrency(summary?.totalIncome ?? 0, currency)}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">This month</p>
+              <p className={`text-xs mt-1 font-medium ${getDeltaColor(summary?.incomeMonthOverMonthChange ?? 0)}`}>
+                {formatDelta(summary?.incomeMonthOverMonthChange ?? 0)} vs last month
+              </p>
             </Card>
 
             <Card className="border-l-4 border-l-rose-500">

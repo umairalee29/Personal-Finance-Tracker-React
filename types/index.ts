@@ -104,6 +104,8 @@ export interface IAnalyticsSummary {
   topCategories: ITopCategory[]
   monthOverMonthChange: number
   previousMonthExpenses: number
+  incomeMonthOverMonthChange: number
+  previousMonthIncome: number
 }
 
 export interface IMonthlyTrend {

@@ -38,8 +38,11 @@ export async function GET(req: NextRequest) {
     const prevAgg = await Transaction.aggregate(buildSummaryPipeline(userId, prevStart, prevEnd))
     const prevMap = Object.fromEntries(prevAgg.map((s: { _id: string; total: number }) => [s._id, s.total]))
     const prevExpenses = prevMap['expense'] ?? 0
+    const prevIncome = prevMap['income'] ?? 0
     const monthOverMonthChange =
       prevExpenses > 0 ? ((totalExpenses - prevExpenses) / prevExpenses) * 100 : 0
+    const incomeMonthOverMonthChange =
+      prevIncome > 0 ? ((totalIncome - prevIncome) / prevIncome) * 100 : 0
 
     // Top categories
     const topCatsRaw = await Transaction.aggregate(
@@ -63,6 +66,8 @@ export async function GET(req: NextRequest) {
         topCategories,
         monthOverMonthChange,
         previousMonthExpenses: prevExpenses,
+        incomeMonthOverMonthChange,
+        previousMonthIncome: prevIncome,
       },
     })
   } catch (err) {
