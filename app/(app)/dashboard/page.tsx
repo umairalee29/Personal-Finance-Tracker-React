@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useDashboard } from '@/hooks/useDashboard'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { SkeletonCard, Skeleton } from '@/components/ui/Skeleton'
 import { TrendLineChart } from '@/components/charts/TrendLineChart'
 import { SpendingPieChart } from '@/components/charts/SpendingPieChart'
@@ -65,33 +66,15 @@ function CategoryCard({ initialCategories, isInitialLoading, currency }: {
     <Card>
       <CardHeader className="mb-2">
         <CardTitle>Spending by Category</CardTitle>
-        <select
+        <Dropdown
+          options={CAT_FILTERS as unknown as { label: string; value: string }[]}
           value={period}
-          onChange={(e) => setPeriod(e.target.value as CatPeriod)}
-          className="cursor-pointer appearance-none text-xs font-medium
-                     bg-slate-50 dark:bg-slate-700/60
-                     border border-slate-200 dark:border-slate-600
-                     text-slate-700 dark:text-slate-300
-                     rounded-lg px-3 py-1.5
-                     hover:border-primary dark:hover:border-primary-400 hover:bg-white dark:hover:bg-slate-700
-                     focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-                     transition-all duration-150"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 0.4rem center',
-            backgroundSize: '0.85rem',
-            paddingRight: '1.6rem',
-          }}
-        >
-          {CAT_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>{f.label}</option>
-          ))}
-        </select>
+          onChange={(v) => setPeriod(v as CatPeriod)}
+        />
       </CardHeader>
       {loading
         ? <Skeleton className="h-60" />
-        : <div className="mt-12"><SpendingPieChart data={data} currency={currency} /></div>}
+        : <div className="mt-8"><SpendingPieChart data={data} currency={currency} /></div>}
     </Card>
   )
 }

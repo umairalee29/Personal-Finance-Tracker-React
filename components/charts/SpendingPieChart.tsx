@@ -75,7 +75,7 @@ export function SpendingPieChart({ data, currency = 'USD', height = 260, donut =
           <Tooltip content={<CustomTooltip currency={currency} />} />
         </PieChart>
       </ResponsiveContainer>
-      <ul className="flex flex-wrap gap-2 justify-center mt-12">
+      <ul className="flex flex-wrap gap-2 justify-center mt-8">
         {data.map((entry) => {
           const isHidden = hidden.has(entry.categoryId)
           return (
