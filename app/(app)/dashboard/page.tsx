@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useDashboard } from '@/hooks/useDashboard'
@@ -82,10 +82,15 @@ function HeatmapCard({ initialData, initialMaxTotal, isInitialLoading, currency 
 }) {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
 
+  const stableInitial = useMemo(
+    () => ({ data: initialData, maxTotal: initialMaxTotal }),
+    [initialData, initialMaxTotal]
+  )
+
   const { data: result, loading } = useFilteredFetch<HeatmapResult, number>({
     defaultValue: CURRENT_YEAR,
     filter: selectedYear,
-    initialData: { data: initialData, maxTotal: initialMaxTotal },
+    initialData: stableInitial,
     isInitialLoading,
     fetcher: fetchHeatmap,
   })

@@ -87,7 +87,7 @@ export function HeatmapCalendar({ data, maxTotal, year, currency = 'USD' }: Heat
       </div>
 
       {/* Month labels below the grid */}
-      <div className="flex gap-1 mt-1">
+      <div className="flex gap-1">
         <div className="flex-shrink-0 w-6" />
         <div
           className="flex-1 grid gap-0.5"
@@ -97,7 +97,7 @@ export function HeatmapCalendar({ data, maxTotal, year, currency = 'USD' }: Heat
             <span
               key={label}
               className="text-[10px] text-slate-400 dark:text-slate-500 truncate"
-              style={{ gridColumn: col + 1 }}
+              style={{ gridColumn: `${col + 1} / span 4` }}
             >
               {label}
             </span>
