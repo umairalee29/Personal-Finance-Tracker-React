@@ -13,7 +13,7 @@ interface HeatmapCalendarProps {
 }
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa']
 
 function getCellColor(total: number, maxTotal: number): string {
   if (total === 0) return 'bg-slate-100 dark:bg-slate-800'
@@ -50,12 +50,12 @@ export function HeatmapCalendar({ data, maxTotal, year, currency = 'USD' }: Heat
     <div className="w-full">
       <div className="flex gap-1 items-start">
         {/* Day labels */}
-        <div className="flex flex-col gap-0.5 flex-shrink-0 w-6">
+        <div className="flex flex-col gap-0.5 flex-shrink-0 w-4">
           {DAYS.map((d, i) => (
             <div
               key={d}
               className="aspect-square flex items-center text-[9px] text-slate-400 dark:text-slate-500"
-              style={{ visibility: i % 2 === 0 ? 'visible' : 'hidden' }}
+              style={{ visibility: [0, 2, 4, 6].includes(i) ? 'visible' : 'hidden' }}
             >
               {d}
             </div>
@@ -68,7 +68,7 @@ export function HeatmapCalendar({ data, maxTotal, year, currency = 'USD' }: Heat
           style={{ gridTemplateColumns: 'repeat(53, 1fr)' }}
         >
           {grid[0].map((_, col) => (
-            <div key={col} className="flex flex-col gap-0.5">
+            <div key={col} className="flex flex-col gap-1">
               {grid.map((row, rowIdx) => {
                 const day = row[col]
                 if (!day) return <div key={rowIdx} className="aspect-square" />
@@ -86,9 +86,9 @@ export function HeatmapCalendar({ data, maxTotal, year, currency = 'USD' }: Heat
         </div>
       </div>
 
-      {/* Month labels below the grid */}
-      <div className="flex gap-1">
-        <div className="flex-shrink-0 w-6" />
+      {/* Month labels below grid */}
+      <div className="flex gap-1 mt-0.5">
+        <div className="flex-shrink-0 w-4" />
         <div
           className="flex-1 grid gap-0.5"
           style={{ gridTemplateColumns: 'repeat(53, 1fr)' }}
