@@ -313,19 +313,8 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
       .finally(() => setLoading(false))
   }, [])
 
-  const groups: { dateKey: string; label: string; items: ITransaction[] }[] = []
-  const seen = new Map<string, number>()
-  for (const t of transactions) {
-    const dateKey = formatDate(t.date, 'yyyy-MM-dd')
-    if (!seen.has(dateKey)) {
-      seen.set(dateKey, groups.length)
-      groups.push({ dateKey, label: formatRelativeDate(t.date), items: [] })
-    }
-    groups[seen.get(dateKey)!].items.push(t)
-  }
-
   return (
-    <Card className={className}>
+    <Card className={`flex flex-col h-full ${className}`}>
       <CardHeader>
         <CardTitle>Recent Transactions</CardTitle>
         <Link href="/transactions" className="text-xs text-primary dark:text-primary-300 hover:underline">
@@ -334,52 +323,46 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
       </CardHeader>
       {loading ? (
         <div className="space-y-3">
-          {Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className="h-10" />)}
+          {Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-10" />)}
         </div>
       ) : transactions.length === 0 ? (
         <p className="text-sm text-slate-400 text-center py-6">No transactions yet</p>
       ) : (
         <div className="space-y-4">
-          {groups.map((group) => (
-            <div key={group.dateKey}>
-              <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
-                {group.label}
-              </p>
-              <div className="space-y-8">
-                {group.items.map((t, i) => {
-                  const cat = t.categoryId as unknown as { icon?: string; name?: string }
-                  const isIncome = t.type === 'income'
-                  return (
-                    <div
-                      key={t.id ? String(t.id) : `${group.dateKey}-${i}`}
-                      className={`flex items-center gap-3 pl-3 py-1 border-l-2 ${
-                        isIncome ? 'border-l-emerald-500' : 'border-l-rose-500'
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-base flex-shrink-0">
-                        {cat?.icon ?? '💰'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                          {t.description}
-                        </p>
-                        {cat?.name && (
-                          <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                            {cat.name}
-                          </p>
-                        )}
-                      </div>
-                      <span className={`text-sm font-semibold tabular-nums flex-shrink-0 ${
-                        isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                      }`}>
-                        {isIncome ? '+' : '−'}{formatCurrency(t.amount, currency)}
-                      </span>
-                    </div>
-                  )
-                })}
+          {transactions.map((t, i) => {
+            const cat = t.categoryId as unknown as { icon?: string; name?: string }
+            const isIncome = t.type === 'income'
+            return (
+              <div
+                key={t.id ? String(t.id) : `txn-${i}`}
+                className={`flex items-center gap-3 pl-3 py-1 border-l-2 ${
+                  isIncome ? 'border-l-emerald-500' : 'border-l-rose-500'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-base flex-shrink-0">
+                  {cat?.icon ?? '💰'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                    {t.description}
+                  </p>
+                  {cat?.name && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      {cat.name}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                    {formatRelativeDate(t.date)}
+                  </p>
+                </div>
+                <span className={`text-sm font-semibold tabular-nums flex-shrink-0 ${
+                  isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                }`}>
+                  {isIncome ? '+' : '−'}{formatCurrency(t.amount, currency)}
+                </span>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </Card>
