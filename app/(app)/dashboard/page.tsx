@@ -307,7 +307,7 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/transactions?limit=4&sortBy=date&sortDir=desc')
+    fetch('/api/transactions?limit=3&sortBy=date&sortDir=desc')
       .then((r) => r.json())
       .then((j) => setTransactions(j.data ?? []))
       .finally(() => setLoading(false))
@@ -345,14 +345,14 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
               <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
                 {group.label}
               </p>
-              <div className="space-y-2">
+              <div className="space-y-8">
                 {group.items.map((t) => {
                   const cat = t.categoryId as unknown as { icon?: string; name?: string }
                   const isIncome = t.type === 'income'
                   return (
                     <div
                       key={String(t.id)}
-                      className={`flex items-center gap-3 pl-3 border-l-2 ${
+                      className={`flex items-center gap-3 pl-3 py-1 border-l-2 ${
                         isIncome ? 'border-l-emerald-500' : 'border-l-rose-500'
                       }`}
                     >
