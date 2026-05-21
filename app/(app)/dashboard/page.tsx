@@ -369,6 +369,22 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
   )
 }
 
+const INSIGHT_STYLES: Record<'green' | 'amber' | 'red', string> = {
+  green: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300',
+  amber: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
+  red:   'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300',
+}
+const INSIGHT_ICONS: Record<'green' | 'amber' | 'red', string> = { green: '✅', amber: '⚠️', red: '🚨' }
+
+function InsightStrip({ tone, message }: { tone: 'green' | 'amber' | 'red'; message: string }) {
+  return (
+    <div className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-medium ${INSIGHT_STYLES[tone]}`}>
+      <span className="text-base flex-shrink-0">{INSIGHT_ICONS[tone]}</span>
+      <span>{message}</span>
+    </div>
+  )
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -426,20 +442,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Insight strip */}
-      {!isLoading && insight && (() => {
-        const styles: Record<'green' | 'amber' | 'red', string> = {
-          green: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300',
-          amber: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
-          red:   'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300',
-        }
-        const icons: Record<'green' | 'amber' | 'red', string> = { green: '✅', amber: '⚠️', red: '🚨' }
-        return (
-          <div className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-medium ${styles[insight.tone]}`}>
-            <span className="text-base flex-shrink-0">{icons[insight.tone]}</span>
-            <span>{insight.message}</span>
-          </div>
-        )
-      })()}
+      {!isLoading && insight && (
+        <InsightStrip tone={insight.tone} message={insight.message} />
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
