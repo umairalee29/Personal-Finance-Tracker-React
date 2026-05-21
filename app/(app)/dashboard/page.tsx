@@ -313,15 +313,15 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
       .finally(() => setLoading(false))
   }, [])
 
-  const groups: { label: string; items: ITransaction[] }[] = []
+  const groups: { dateKey: string; label: string; items: ITransaction[] }[] = []
   const seen = new Map<string, number>()
   for (const t of transactions) {
-    const key = formatDate(t.date, 'yyyy-MM-dd')
-    if (!seen.has(key)) {
-      seen.set(key, groups.length)
-      groups.push({ label: formatRelativeDate(t.date), items: [] })
+    const dateKey = formatDate(t.date, 'yyyy-MM-dd')
+    if (!seen.has(dateKey)) {
+      seen.set(dateKey, groups.length)
+      groups.push({ dateKey, label: formatRelativeDate(t.date), items: [] })
     }
-    groups[seen.get(key)!].items.push(t)
+    groups[seen.get(dateKey)!].items.push(t)
   }
 
   return (
@@ -341,17 +341,17 @@ function RecentTransactions({ currency, className = '' }: { currency: string; cl
       ) : (
         <div className="space-y-4">
           {groups.map((group) => (
-            <div key={group.label}>
+            <div key={group.dateKey}>
               <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
                 {group.label}
               </p>
               <div className="space-y-8">
-                {group.items.map((t) => {
+                {group.items.map((t, i) => {
                   const cat = t.categoryId as unknown as { icon?: string; name?: string }
                   const isIncome = t.type === 'income'
                   return (
                     <div
-                      key={String(t.id)}
+                      key={t.id ? String(t.id) : `${group.dateKey}-${i}`}
                       className={`flex items-center gap-3 pl-3 py-1 border-l-2 ${
                         isIncome ? 'border-l-emerald-500' : 'border-l-rose-500'
                       }`}
@@ -535,7 +535,7 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-400 text-center py-6">No budgets set up yet</p>
           ) : (
             <div className="space-y-4">
-              {topBudgets.map((b) => {
+              {topBudgets.map((b, i) => {
                 const pct = b.percentageUsed ?? 0
                 const cat = b.category as unknown as { icon?: string }
                 const isOver = pct >= (b.alertThreshold ?? 80)
@@ -546,7 +546,7 @@ export default function DashboardPage() {
                   ? 'ring-1 ring-amber-400 dark:ring-amber-500 bg-amber-50/60 dark:bg-amber-950/20'
                   : ''
                 return (
-                  <div key={String(b.id)} className={`rounded-lg px-3 py-2.5 -mx-3 transition-all duration-300 ${alertRing}`}>
+                  <div key={b.id ? String(b.id) : `budget-${i}`} className={`rounded-lg px-3 py-2.5 -mx-3 transition-all duration-300 ${alertRing}`}>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                         {cat?.icon ?? '💰'} {b.name}
