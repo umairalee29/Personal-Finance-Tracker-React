@@ -18,7 +18,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: 'WealthLens — Personal Finance Tracker',
   description: 'Track income, expenses, budgets and financial trends in one place.',
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/favicon.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
