@@ -112,16 +112,36 @@ export function TransactionFilters() {
           <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1.5">
             Status
           </label>
-          <select
-            value={filters.status ?? ''}
-            onChange={(e) => setFilters({ status: (e.target.value || undefined) as TransactionStatus | undefined, page: 1 })}
-            className="select w-36"
-          >
-            <option value="">All statuses</option>
-            <option value="cleared">Cleared</option>
-            <option value="pending">Pending</option>
-            <option value="reconciled">Reconciled</option>
-          </select>
+          <div className="flex h-[38px] rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+            {([
+              { value: undefined,      label: 'All' },
+              { value: 'cleared',      label: 'Cleared' },
+              { value: 'pending',      label: 'Pending' },
+              { value: 'reconciled',   label: 'Reconciled' },
+            ] as { value: TransactionStatus | undefined; label: string }[]).map(({ value, label }) => {
+              const active = filters.status === value
+              const activeStyle = !value
+                ? 'bg-primary text-white'
+                : value === 'cleared'
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400'
+                : value === 'pending'
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
+                : 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-300'
+              return (
+                <button
+                  key={value ?? 'all'}
+                  onClick={() => setFilters({ status: value, page: 1 })}
+                  className={`h-full px-3 text-xs font-medium transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0
+                    ${active
+                      ? activeStyle
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                    }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Date range */}
