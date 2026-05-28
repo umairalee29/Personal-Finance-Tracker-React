@@ -98,12 +98,24 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {transactions.map((t) => {
               const cat = t.categoryId as unknown as { icon?: string; name?: string }
+              const isIncome = t.type === 'income'
+              const isTransfer = t.type === 'transfer'
+              const rowBorder = isIncome
+                ? 'border-l-4 border-l-emerald-500'
+                : isTransfer
+                ? 'border-l-4 border-l-blue-500'
+                : 'border-l-4 border-l-rose-500'
+              const rowHover = isIncome
+                ? 'hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20'
+                : isTransfer
+                ? 'hover:bg-blue-50/40 dark:hover:bg-blue-950/20'
+                : 'hover:bg-rose-50/40 dark:hover:bg-rose-950/20'
               return (
                 <tr
                   key={String((t as unknown as { _id: string })._id)}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  className={`transition-colors ${rowHover}`}
                 >
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                  <td className={`pl-3 pr-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap ${rowBorder}`}>
                     {formatDate(t.date, 'MMM d, yyyy')}
                   </td>
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100 max-w-xs">
@@ -119,8 +131,8 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                   <td className="px-4 py-3">
                     <Badge variant={t.type}>{t.type}</Badge>
                   </td>
-                  <td className={`px-4 py-3 text-right font-semibold tabular whitespace-nowrap ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                    {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount, currency)}
+                  <td className={`px-4 py-3 text-right font-semibold tabular whitespace-nowrap ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : isTransfer ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    {isIncome ? '+' : isTransfer ? '⇄' : '−'}{formatCurrency(t.amount, currency)}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={t.status}>{t.status}</Badge>
