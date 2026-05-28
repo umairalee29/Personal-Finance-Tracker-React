@@ -65,12 +65,12 @@ export function TransactionFilters() {
           <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1.5">
             Type
           </label>
-          <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="flex h-[38px] rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
             {([undefined, 'income', 'expense', 'transfer'] as (TransactionType | undefined)[]).map((t) => (
               <button
                 key={t ?? 'all'}
                 onClick={() => setFilters({ type: t, page: 1 })}
-                className={`px-3 py-2 text-xs font-medium transition-colors
+                className={`h-full px-3 text-xs font-medium transition-colors
                   ${filters.type === t
                     ? 'bg-primary text-white'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
