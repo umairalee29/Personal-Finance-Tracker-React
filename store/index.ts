@@ -16,7 +16,7 @@ interface WealthLensStore {
 
 const defaultFilters: TransactionFilters = {
   page: 1,
-  limit: 20,
+  limit: 10,
   sortBy: 'date',
   sortDir: 'desc',
 }
