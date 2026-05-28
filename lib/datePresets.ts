@@ -43,10 +43,7 @@ export function getPresetDates(preset: DatePreset): { startDate?: string; endDat
 }
 
 export function getActiveDateLabel(startDate?: string, endDate?: string): string {
-  // No filter — show current month
-  if (!startDate && !endDate) {
-    return new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
-  }
+  if (!startDate && !endDate) return 'Any time'
   // Match against presets
   for (const p of DATE_PRESETS) {
     if (p.value === 'any') continue
