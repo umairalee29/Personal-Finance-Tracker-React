@@ -10,6 +10,7 @@ import { ImportCSVModal } from '@/components/transactions/ImportCSVModal'
 import { Modal } from '@/components/ui/Modal'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { formatCurrency } from '@/lib/formatters'
+import { getActiveDateLabel } from '@/lib/datePresets'
 
 export default function TransactionsPage() {
   const { data: session } = useSession()
@@ -32,7 +33,7 @@ export default function TransactionsPage() {
     window.open(`/api/transactions?${params}`, '_blank')
   }
 
-  const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
+  const dateLabel = getActiveDateLabel(filters.startDate, filters.endDate)
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -41,7 +42,7 @@ export default function TransactionsPage() {
         <div>
           <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-slate-100">
             Transactions
-            <span className="ml-2 text-slate-400 dark:text-slate-500 font-normal">· {currentMonth}</span>
+            <span className="ml-2 text-slate-400 dark:text-slate-500 font-normal">· {dateLabel}</span>
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             {total} transaction{total !== 1 ? 's' : ''} found
