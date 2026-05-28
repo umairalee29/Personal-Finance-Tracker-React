@@ -84,10 +84,13 @@ async function seed() {
   })
   console.log(`👤 Seeded demo user: demo@wealthlens.com / demo1234`)
 
-  // Clone system categories for user
-  await Category.insertMany(
-    SYSTEM_CATEGORIES.map((c, i) => ({ ...c, userId: user._id, isDefault: false, _id: undefined, __v: undefined }))
+  // Clone system categories for user — capture the new IDs
+  const userCats = await Category.insertMany(
+    SYSTEM_CATEGORIES.map((c) => ({ ...c, userId: user._id, isDefault: false }))
   )
+  // Map category name → user-owned category ID (used for transactions + budgets)
+  const userCatMap = new Map(userCats.map((c) => [c.name, c._id]))
+  console.log(`📂 Cloned ${userCats.length} categories for demo user`)
 
   // 3. Transactions (200, spread across 12 months)
   const expenseDescriptions: Record<string, string[]> = {
@@ -122,7 +125,7 @@ async function seed() {
     const date = subDays(new Date(), daysAgo)
 
     if (isIncome) {
-      const incomeId = catMap.get('Income')
+      const incomeId = userCatMap.get('Income')
       transactions.push({
         userId: user._id,
         type: 'income',
@@ -138,7 +141,7 @@ async function seed() {
       })
     } else {
       const catName = pick(expenseCatNames)
-      const catId = catMap.get(catName)
+      const catId = userCatMap.get(catName)
       const descs = expenseDescriptions[catName]
       transactions.push({
         userId: user._id,
@@ -179,7 +182,7 @@ async function seed() {
   await Budget.insertMany(
     budgetDefs.map(({ cat, name, limit, alertThreshold }) => ({
       userId: user._id,
-      categoryId: catMap.get(cat),
+      categoryId: userCatMap.get(cat),
       name,
       limit,
       period: 'monthly',
