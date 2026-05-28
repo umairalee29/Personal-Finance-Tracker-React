@@ -11,10 +11,7 @@ export async function GET(_req: NextRequest) {
 
   await connectDB()
   const categories = await Category.find({
-    $or: [
-      { userId: new Types.ObjectId(session.user.id) },
-      { isDefault: true, userId: null },
-    ],
+    userId: new Types.ObjectId(session.user.id),
   }).sort({ group: 1, name: 1 }).lean()
 
   return NextResponse.json({ data: categories })
