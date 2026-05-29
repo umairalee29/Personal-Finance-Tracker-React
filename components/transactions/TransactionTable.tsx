@@ -19,6 +19,11 @@ interface TransactionTableProps {
 
 type SortKey = 'date' | 'amount' | 'description'
 
+function SortIcon({ col, sortBy, sortDir }: { col: SortKey; sortBy?: string; sortDir?: string }) {
+  if (sortBy !== col) return <span className="text-slate-300">↕</span>
+  return <span className="text-primary">{sortDir === 'asc' ? '↑' : '↓'}</span>
+}
+
 export function TransactionTable({ transactions, isLoading, onRefetch, currency = 'USD' }: TransactionTableProps) {
   const { filters, setFilters } = useStore()
   const [editTarget, setEditTarget] = useState<ITransaction | null>(null)
@@ -31,11 +36,6 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
     } else {
       setFilters({ sortBy: key, sortDir: 'desc' })
     }
-  }
-
-  const SortIcon = ({ col }: { col: SortKey }) => {
-    if (filters.sortBy !== col) return <span className="text-slate-300">↕</span>
-    return <span className="text-primary">{filters.sortDir === 'asc' ? '↑' : '↓'}</span>
   }
 
   const handleDelete = async () => {
@@ -79,7 +79,7 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                   className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 select-none"
                   onClick={() => handleSort(key)}
                 >
-                  {label} <SortIcon col={key} />
+                  {label} <SortIcon col={key} sortBy={filters.sortBy} sortDir={filters.sortDir} />
                 </th>
               ))}
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
@@ -88,7 +88,7 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                 className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 select-none"
                 onClick={() => handleSort('amount')}
               >
-                Amount <SortIcon col="amount" />
+                Amount <SortIcon col="amount" sortBy={filters.sortBy} sortDir={filters.sortDir} />
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tags</th>
