@@ -10,6 +10,11 @@ import { formatCurrency, formatDate } from '@/lib/formatters'
 import { useStore } from '@/store'
 import type { ITransaction } from '@/types'
 
+interface PopulatedCategory {
+  icon?: string
+  name?: string
+}
+
 interface TransactionTableProps {
   transactions: ITransaction[]
   isLoading: boolean
@@ -18,6 +23,12 @@ interface TransactionTableProps {
 }
 
 type SortKey = 'date' | 'amount' | 'description'
+
+const ROW_STYLES = {
+  income:   { border: 'border-l-4 border-l-emerald-500', hover: 'hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20' },
+  expense:  { border: 'border-l-4 border-l-rose-500',    hover: 'hover:bg-rose-50/40 dark:hover:bg-rose-950/20' },
+  transfer: { border: 'border-l-4 border-l-blue-500',    hover: 'hover:bg-blue-50/40 dark:hover:bg-blue-950/20' },
+} as const
 
 function SortIcon({ col, sortBy, sortDir }: { col: SortKey; sortBy?: string; sortDir?: string }) {
   if (sortBy !== col) return <span className="text-slate-300">↕</span>
@@ -57,7 +68,12 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
   if (transactions.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="text-5xl mb-4">📭</div>
+        <div className="flex justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M9 18H3a2 2 0 01-2-2V8a2 2 0 012-2h18a2 2 0 012 2v8a2 2 0 01-2 2h-6M9 18v2m0 0h6m-6 0H7" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 18v2m6-2v2" />
+          </svg>
+        </div>
         <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">No transactions found</p>
         <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Try adjusting your filters or add a new transaction</p>
       </div>
@@ -90,21 +106,15 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                 Amount <SortIcon col="amount" sortBy={filters.sortBy} sortDir={filters.sortDir} />
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tags</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {transactions.map((t) => {
-              const cat = t.categoryId as unknown as { icon?: string; name?: string }
+              const cat = t.categoryId as unknown as PopulatedCategory
               const isIncome = t.type === 'income'
               const isTransfer = t.type === 'transfer'
               const typeKey = isIncome ? 'income' : isTransfer ? 'transfer' : 'expense'
-              const ROW_STYLES = {
-                income:   { border: 'border-l-4 border-l-emerald-500', hover: 'hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20' },
-                expense:  { border: 'border-l-4 border-l-rose-500',    hover: 'hover:bg-rose-50/40 dark:hover:bg-rose-950/20' },
-                transfer: { border: 'border-l-4 border-l-blue-500',    hover: 'hover:bg-blue-50/40 dark:hover:bg-blue-950/20' },
-              } as const
               const { border: rowBorder, hover: rowHover } = ROW_STYLES[typeKey]
               return (
                 <tr
@@ -117,6 +127,15 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100 max-w-xs">
                     <span className="truncate block">{t.description}</span>
                     {t.note && <span className="text-xs text-slate-400 truncate block">{t.note}</span>}
+                    {t.tags && t.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {t.tags.map((tag) => (
+                          <span key={tag} className="bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
@@ -129,15 +148,6 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={t.status}>{t.status}</Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {t.tags?.map((tag) => (
-                        <span key={tag} className="bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs px-2 py-0.5 rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">

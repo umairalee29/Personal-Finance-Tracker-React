@@ -65,7 +65,7 @@ export default function TransactionsPage() {
   const { data: session } = useSession()
   const currency = session?.user?.currency ?? 'USD'
   const { filters, setFilters } = useStore()
-  const { transactions, total, totalPages, isLoading, summary, refetch } = useTransactions()
+  const { transactions, total, totalPages, isLoading, error, summary, refetch } = useTransactions()
   const [showCreate, setShowCreate] = useState(false)
   const [showImport, setShowImport] = useState(false)
 
@@ -79,6 +79,8 @@ export default function TransactionsPage() {
     if (filters.startDate) params.set('startDate', filters.startDate)
     if (filters.endDate) params.set('endDate', filters.endDate)
     if (filters.search) params.set('search', filters.search)
+    if (filters.sortBy) params.set('sortBy', filters.sortBy)
+    if (filters.sortDir) params.set('sortDir', filters.sortDir)
     window.open(`/api/transactions?${params}`, '_blank')
   }
 
@@ -161,6 +163,17 @@ export default function TransactionsPage() {
         />
       </div>
 
+      {/* Error state */}
+      {error && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>{error}</span>
+          <button onClick={refetch} className="ml-auto text-xs font-medium underline underline-offset-2 hover:no-underline">Retry</button>
+        </div>
+      )}
+
       {/* Table */}
       <TransactionTable
         transactions={transactions}
@@ -170,42 +183,50 @@ export default function TransactionsPage() {
       />
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {total > 0 && (
         <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              disabled={filters.page === 1}
-              onClick={() => setFilters({ page: filters.page - 1 })}
-              className="btn-secondary text-sm disabled:opacity-50"
-            >
-              ← Prev
-            </button>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                disabled={filters.page === 1}
+                onClick={() => setFilters({ page: filters.page - 1 })}
+                className="btn-secondary text-sm disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Prev
+              </button>
 
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const p = Math.max(1, Math.min(totalPages - 4, filters.page - 2)) + i
-              return (
-                <button
-                  key={p}
-                  onClick={() => setFilters({ page: p })}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors
-                    ${filters.page === p
-                      ? 'bg-primary text-white'
-                      : 'btn-ghost'
-                    }`}
-                >
-                  {p}
-                </button>
-              )
-            })}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const p = Math.max(1, Math.min(totalPages - 4, filters.page - 2)) + i
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setFilters({ page: p })}
+                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors
+                      ${filters.page === p
+                        ? 'bg-primary text-white'
+                        : 'btn-ghost'
+                      }`}
+                  >
+                    {p}
+                  </button>
+                )
+              })}
 
-            <button
-              disabled={filters.page === totalPages}
-              onClick={() => setFilters({ page: filters.page + 1 })}
-              className="btn-secondary text-sm disabled:opacity-50"
-            >
-              Next →
-            </button>
-          </div>
+              <button
+                disabled={filters.page === totalPages}
+                onClick={() => setFilters({ page: filters.page + 1 })}
+                className="btn-secondary text-sm disabled:opacity-50 flex items-center gap-1.5"
+              >
+                Next
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          )}
 
           <p className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
             Showing{' '}
