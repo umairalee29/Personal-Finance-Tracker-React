@@ -12,6 +12,53 @@ import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { formatCurrency } from '@/lib/formatters'
 import { getActiveDateLabel } from '@/lib/datePresets'
 
+// ─── Summary strip ────────────────────────────────────────────────────────────
+
+const INCOME_ICON = (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L10 14.586l4.293-4.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17zM10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L10 5.414 5.707 9.707A1 1 0 014.293 8.293l5-5A1 1 0 0110 3z" clipRule="evenodd" />
+  </svg>
+)
+const EXPENSE_ICON = (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L10 5.414 5.707 9.707A1 1 0 014.293 8.293l5-5A1 1 0 0110 3zM10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L10 14.586l4.293-4.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17z" clipRule="evenodd" />
+  </svg>
+)
+const NET_ICON = (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.077 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.077-2.354-1.253V5z" clipRule="evenodd" />
+  </svg>
+)
+
+interface SummaryCardProps {
+  label: string
+  value: string
+  icon: React.ReactNode
+  loading: boolean
+  card: string   // bg + border classes
+  iconBox: string // icon wrapper bg classes
+  iconColor: string
+  labelColor: string
+  valueColor: string
+}
+
+function SummaryCard({ label, value, icon, loading, card, iconBox, iconColor, labelColor, valueColor }: SummaryCardProps) {
+  return (
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${card}`}>
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBox}`}>
+        <span className={iconColor}>{icon}</span>
+      </div>
+      <div>
+        <p className={`text-[10px] font-semibold uppercase tracking-wide ${labelColor}`}>{label}</p>
+        <p className={`text-base font-bold tabular-nums transition-opacity duration-200 ${valueColor} ${loading ? 'opacity-40' : 'opacity-100'}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function TransactionsPage() {
   const { data: session } = useSession()
   const currency = session?.user?.currency ?? 'USD'
@@ -75,62 +122,41 @@ export default function TransactionsPage() {
 
       {/* Summary strip */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L10 14.586l4.293-4.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17zM10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L10 5.414 5.707 9.707A1 1 0 014.293 8.293l5-5A1 1 0 0110 3z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-500">
-              Income
-            </p>
-            <p className={`text-base font-bold tabular-nums text-emerald-700 dark:text-emerald-300 transition-opacity duration-200 ${isLoading ? 'opacity-40' : 'opacity-100'}`}>
-              {formatCurrency(summary.totalIncome, currency)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
-          <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-rose-600 dark:text-rose-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L10 5.414 5.707 9.707A1 1 0 014.293 8.293l5-5A1 1 0 0110 3zM10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L10 14.586l4.293-4.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-500">
-              Expenses
-            </p>
-            <p className={`text-base font-bold tabular-nums text-rose-700 dark:text-rose-300 transition-opacity duration-200 ${isLoading ? 'opacity-40' : 'opacity-100'}`}>
-              {formatCurrency(summary.totalExpenses, currency)}
-            </p>
-          </div>
-        </div>
-
-        <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors duration-300 ${
-          net >= 0
-            ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
-            : 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800'
-        }`}>
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-            net >= 0
-              ? 'bg-blue-100 dark:bg-blue-900/50'
-              : 'bg-rose-100 dark:bg-rose-900/50'
-          }`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className={`w-4 h-4 ${net >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`} viewBox="0 0 20 20" fill="currentColor">
-              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.077 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.077-2.354-1.253V5z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <p className={`text-[10px] font-semibold uppercase tracking-wide ${net >= 0 ? 'text-blue-600 dark:text-blue-500' : 'text-rose-600 dark:text-rose-500'}`}>
-              Net
-            </p>
-            <p className={`text-base font-bold tabular-nums transition-opacity duration-200 ${isLoading ? 'opacity-40' : 'opacity-100'} ${net >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-rose-700 dark:text-rose-300'}`}>
-              {net >= 0 ? '+' : '−'}{formatCurrency(Math.abs(net), currency)}
-            </p>
-          </div>
-        </div>
+        <SummaryCard
+          label="Income"
+          value={formatCurrency(summary.totalIncome, currency)}
+          icon={INCOME_ICON}
+          loading={isLoading}
+          card="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"
+          iconBox="bg-emerald-100 dark:bg-emerald-900/50"
+          iconColor="text-emerald-600 dark:text-emerald-400"
+          labelColor="text-emerald-600 dark:text-emerald-500"
+          valueColor="text-emerald-700 dark:text-emerald-300"
+        />
+        <SummaryCard
+          label="Expenses"
+          value={formatCurrency(summary.totalExpenses, currency)}
+          icon={EXPENSE_ICON}
+          loading={isLoading}
+          card="bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800"
+          iconBox="bg-rose-100 dark:bg-rose-900/50"
+          iconColor="text-rose-600 dark:text-rose-400"
+          labelColor="text-rose-600 dark:text-rose-500"
+          valueColor="text-rose-700 dark:text-rose-300"
+        />
+        <SummaryCard
+          label="Net"
+          value={`${net >= 0 ? '+' : '−'}${formatCurrency(Math.abs(net), currency)}`}
+          icon={NET_ICON}
+          loading={isLoading}
+          card={net >= 0
+            ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 transition-colors duration-300'
+            : 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800 transition-colors duration-300'}
+          iconBox={net >= 0 ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-rose-100 dark:bg-rose-900/50'}
+          iconColor={net >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}
+          labelColor={net >= 0 ? 'text-blue-600 dark:text-blue-500' : 'text-rose-600 dark:text-rose-500'}
+          valueColor={net >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-rose-700 dark:text-rose-300'}
+        />
       </div>
 
       {/* Table */}
