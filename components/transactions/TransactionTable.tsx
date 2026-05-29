@@ -43,9 +43,9 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
 
   const handleSort = (key: SortKey) => {
     if (filters.sortBy === key) {
-      setFilters({ sortDir: filters.sortDir === 'asc' ? 'desc' : 'asc' })
+      setFilters({ sortDir: filters.sortDir === 'asc' ? 'desc' : 'asc', page: 1 })
     } else {
-      setFilters({ sortBy: key, sortDir: 'desc' })
+      setFilters({ sortBy: key, sortDir: 'desc', page: 1 })
     }
   }
 

@@ -95,9 +95,10 @@ export default function TransactionsPage() {
             Transactions
             <span className="ml-2 text-slate-400 dark:text-slate-500 font-normal">· {dateLabel}</span>
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {total} transaction{total !== 1 ? 's' : ''} found
-          </p>
+          {isLoading
+            ? <Skeleton className="h-4 w-36 mt-1" />
+            : <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{total} transaction{total !== 1 ? 's' : ''} found</p>
+          }
         </div>
         <div className="flex items-center gap-2">
           <button onClick={handleExport} className="btn-secondary text-xs flex items-center gap-1.5">
