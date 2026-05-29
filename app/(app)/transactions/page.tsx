@@ -180,6 +180,7 @@ export default function TransactionsPage() {
         transactions={transactions}
         isLoading={isLoading}
         onRefetch={refetch}
+        onAdd={() => setShowCreate(true)}
         currency={currency}
       />
 
@@ -229,15 +230,26 @@ export default function TransactionsPage() {
             </div>
           )}
 
-          <p className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
-            Showing{' '}
-            <span className="font-medium text-slate-600 dark:text-slate-300">
-              {(filters.page - 1) * filters.limit + 1}–{Math.min(filters.page * filters.limit, total)}
-            </span>
-            {' '}of{' '}
-            <span className="font-medium text-slate-600 dark:text-slate-300">{total}</span>
-            {' '}transactions
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+              Showing{' '}
+              <span className="font-medium text-slate-600 dark:text-slate-300">
+                {(filters.page - 1) * filters.limit + 1}–{Math.min(filters.page * filters.limit, total)}
+              </span>
+              {' '}of{' '}
+              <span className="font-medium text-slate-600 dark:text-slate-300">{total}</span>
+              {' '}transactions
+            </p>
+            <select
+              value={filters.limit}
+              onChange={(e) => setFilters({ limit: Number(e.target.value), page: 1 })}
+              className="select text-xs h-7 py-0 pl-2 pr-7 w-auto"
+            >
+              {[10, 25, 50].map((n) => (
+                <option key={n} value={n}>{n} / page</option>
+              ))}
+            </select>
+          </div>
         </div>
       )}
 
