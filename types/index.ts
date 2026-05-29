@@ -39,6 +39,7 @@ export interface IUser {
 }
 
 export interface ICategory {
+  _id?: string
   id: string
   userId: string | null
   name: string
@@ -49,6 +50,7 @@ export interface ICategory {
 }
 
 export interface ITransaction {
+  _id?: string
   id: string
   userId: string
   type: TransactionType

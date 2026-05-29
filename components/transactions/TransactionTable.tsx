@@ -42,7 +42,7 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      const res = await fetch(`/api/transactions/${(deleteTarget as unknown as { _id: string })._id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/transactions/${deleteTarget._id}`, { method: 'DELETE' })
       if (!res.ok) { showToast.error('Failed to delete transaction'); return }
       showToast.success('Transaction deleted')
       setDeleteTarget(null)
@@ -109,7 +109,7 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
               const { border: rowBorder, hover: rowHover } = ROW_STYLES[typeKey]
               return (
                 <tr
-                  key={String((t as unknown as { _id: string })._id)}
+                  key={String(t._id)}
                   className={`transition-colors ${rowHover}`}
                 >
                   <td className={`pl-3 pr-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap ${rowBorder}`}>

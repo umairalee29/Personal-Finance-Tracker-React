@@ -116,7 +116,7 @@ export function TransactionFilters() {
           >
             <option value="">All categories</option>
             {categories.map((c) => (
-              <option key={String((c as unknown as { _id: string })._id)} value={String((c as unknown as { _id: string })._id)}>
+              <option key={String(c._id)} value={String(c._id)}>
                 {c.icon} {c.name}
               </option>
             ))}
