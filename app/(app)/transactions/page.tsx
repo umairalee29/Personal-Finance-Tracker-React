@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/Modal'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { formatCurrency } from '@/lib/formatters'
 import { getActiveDateLabel } from '@/lib/datePresets'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 // ─── Summary strip ────────────────────────────────────────────────────────────
 
@@ -51,9 +52,10 @@ function SummaryCard({ label, value, icon, loading, card, iconBox, iconColor, la
       </div>
       <div>
         <p className={`text-[10px] font-semibold uppercase tracking-wide ${labelColor}`}>{label}</p>
-        <p className={`text-base font-bold tabular-nums transition-opacity duration-200 ${valueColor} ${loading ? 'opacity-40' : 'opacity-100'}`}>
-          {value}
-        </p>
+        {loading
+          ? <Skeleton className="h-5 w-20 mt-0.5" />
+          : <p className={`text-base font-bold tabular-nums ${valueColor}`}>{value}</p>
+        }
       </div>
     </div>
   )

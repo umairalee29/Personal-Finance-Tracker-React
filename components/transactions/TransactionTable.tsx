@@ -83,7 +83,6 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                 </th>
               ))}
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type</th>
               <th
                 className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 select-none"
                 onClick={() => handleSort('amount')}
@@ -124,9 +123,6 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
                       <span>{cat?.icon ?? '💰'}</span>
                       <span className="text-xs">{cat?.name ?? '—'}</span>
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={t.type}>{t.type}</Badge>
                   </td>
                   <td className={`px-4 py-3 text-right font-semibold tabular whitespace-nowrap ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : isTransfer ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
                     {isIncome ? '+' : isTransfer ? '⇄' : '−'}{formatCurrency(t.amount, currency)}
