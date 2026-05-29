@@ -100,16 +100,13 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
               const cat = t.categoryId as unknown as { icon?: string; name?: string }
               const isIncome = t.type === 'income'
               const isTransfer = t.type === 'transfer'
-              const rowBorder = isIncome
-                ? 'border-l-4 border-l-emerald-500'
-                : isTransfer
-                ? 'border-l-4 border-l-blue-500'
-                : 'border-l-4 border-l-rose-500'
-              const rowHover = isIncome
-                ? 'hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20'
-                : isTransfer
-                ? 'hover:bg-blue-50/40 dark:hover:bg-blue-950/20'
-                : 'hover:bg-rose-50/40 dark:hover:bg-rose-950/20'
+              const typeKey = isIncome ? 'income' : isTransfer ? 'transfer' : 'expense'
+              const ROW_STYLES = {
+                income:   { border: 'border-l-4 border-l-emerald-500', hover: 'hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20' },
+                expense:  { border: 'border-l-4 border-l-rose-500',    hover: 'hover:bg-rose-50/40 dark:hover:bg-rose-950/20' },
+                transfer: { border: 'border-l-4 border-l-blue-500',    hover: 'hover:bg-blue-50/40 dark:hover:bg-blue-950/20' },
+              } as const
+              const { border: rowBorder, hover: rowHover } = ROW_STYLES[typeKey]
               return (
                 <tr
                   key={String((t as unknown as { _id: string })._id)}
