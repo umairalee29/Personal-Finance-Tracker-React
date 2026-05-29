@@ -169,39 +169,51 @@ export default function TransactionsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            disabled={filters.page === 1}
-            onClick={() => setFilters({ page: filters.page - 1 })}
-            className="btn-secondary text-sm disabled:opacity-50"
-          >
-            ← Prev
-          </button>
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              disabled={filters.page === 1}
+              onClick={() => setFilters({ page: filters.page - 1 })}
+              className="btn-secondary text-sm disabled:opacity-50"
+            >
+              ← Prev
+            </button>
 
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const p = Math.max(1, Math.min(totalPages - 4, filters.page - 2)) + i
-            return (
-              <button
-                key={p}
-                onClick={() => setFilters({ page: p })}
-                className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors
-                  ${filters.page === p
-                    ? 'bg-primary text-white'
-                    : 'btn-ghost'
-                  }`}
-              >
-                {p}
-              </button>
-            )
-          })}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const p = Math.max(1, Math.min(totalPages - 4, filters.page - 2)) + i
+              return (
+                <button
+                  key={p}
+                  onClick={() => setFilters({ page: p })}
+                  className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors
+                    ${filters.page === p
+                      ? 'bg-primary text-white'
+                      : 'btn-ghost'
+                    }`}
+                >
+                  {p}
+                </button>
+              )
+            })}
 
-          <button
-            disabled={filters.page === totalPages}
-            onClick={() => setFilters({ page: filters.page + 1 })}
-            className="btn-secondary text-sm disabled:opacity-50"
-          >
-            Next →
-          </button>
+            <button
+              disabled={filters.page === totalPages}
+              onClick={() => setFilters({ page: filters.page + 1 })}
+              className="btn-secondary text-sm disabled:opacity-50"
+            >
+              Next →
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+            Showing{' '}
+            <span className="font-medium text-slate-600 dark:text-slate-300">
+              {(filters.page - 1) * filters.limit + 1}–{Math.min(filters.page * filters.limit, total)}
+            </span>
+            {' '}of{' '}
+            <span className="font-medium text-slate-600 dark:text-slate-300">{total}</span>
+            {' '}transactions
+          </p>
         </div>
       )}
 

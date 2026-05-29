@@ -52,7 +52,7 @@ export function TransactionTable({ transactions, isLoading, onRefetch, currency 
     }
   }
 
-  if (isLoading) return <SkeletonTable rows={8} />
+  if (isLoading) return <SkeletonTable rows={10} />
 
   if (transactions.length === 0) {
     return (
