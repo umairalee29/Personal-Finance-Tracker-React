@@ -24,6 +24,7 @@ export function BudgetCard({ budget, currency = 'USD', onRefetch }: BudgetCardPr
   const pct = Math.min(100, budget.percentageUsed ?? 0)
   const cat = budget.category
   const daysLeft = differenceInDays(new Date(budget.endDate), new Date())
+  const isExpired = daysLeft <= 0
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -42,18 +43,24 @@ export function BudgetCard({ budget, currency = 'USD', onRefetch }: BudgetCardPr
 
   return (
     <>
-      <Card className="flex flex-col gap-4">
+      <Card className={`flex flex-col gap-4 transition-opacity ${isExpired ? 'opacity-60' : ''}`}>
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xl">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ${!cat?.color ? 'bg-slate-100 dark:bg-slate-700' : ''}`}
+              style={cat?.color ? { backgroundColor: `${cat.color}26` } : undefined}
+            >
               {cat?.icon ?? '💰'}
             </div>
             <div>
               <h3 className="font-heading font-semibold text-slate-900 dark:text-slate-100 text-sm">
                 {budget.name}
               </h3>
-              <Badge variant="default" className="text-xs capitalize">{budget.period}</Badge>
+              {isExpired
+                ? <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">Expired</span>
+                : <Badge variant="default" className="text-xs capitalize">{budget.period}</Badge>
+              }
             </div>
           </div>
           <div className="flex gap-1">
@@ -97,7 +104,7 @@ export function BudgetCard({ budget, currency = 'USD', onRefetch }: BudgetCardPr
           {/* Progress bar */}
           <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
-              className={`progress-bar ${progressClass}`}
+              className={`progress-bar ${isExpired ? 'bg-slate-400 dark:bg-slate-500' : progressClass}`}
               style={{ width: `${pct}%` }}
             />
           </div>
