@@ -10,11 +10,15 @@ import type { ICategory, IBudget } from '@/types'
 
 interface BudgetFormProps {
   budget?: IBudget
+  currency?: string
   onSuccess?: () => void
   onCancel?: () => void
 }
 
-export function BudgetForm({ budget, onSuccess, onCancel }: BudgetFormProps) {
+export function BudgetForm({ budget, currency = 'USD', onSuccess, onCancel }: BudgetFormProps) {
+  const currencySymbol = new Intl.NumberFormat('en', { style: 'currency', currency, minimumFractionDigits: 0 })
+    .formatToParts(0)
+    .find((p) => p.type === 'currency')?.value ?? currency
   const [categories, setCategories] = useState<ICategory[]>([])
   const [loading, setLoading] = useState(false)
   const isEdit = !!budget
@@ -107,7 +111,7 @@ export function BudgetForm({ budget, onSuccess, onCancel }: BudgetFormProps) {
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Limit</label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{currencySymbol}</span>
             <input {...register('limit')} type="number" min="1" step="0.01" placeholder="500" className="input pl-7" />
           </div>
           {errors.limit && <p className="mt-1 text-xs text-rose-600">{errors.limit.message}</p>}

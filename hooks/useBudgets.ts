@@ -33,11 +33,13 @@ export function useBudgets(): UseBudgetsResult {
       fetch('/api/budgets/alerts').then((r) => r.json()),
     ])
       .then(([b, a]) => {
+        if (b.error) throw new Error(b.error)
+        if (a.error) throw new Error(a.error)
         setBudgets(b.data ?? [])
         setAlerts(a.data ?? [])
         setError(null)
       })
-      .catch(() => setError('Failed to load budgets'))
+      .catch((e: Error) => setError(e.message ?? 'Failed to load budgets'))
       .finally(() => setIsLoading(false))
   }, [fetchTrigger])
 
