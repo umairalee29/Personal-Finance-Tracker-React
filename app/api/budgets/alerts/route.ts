@@ -4,7 +4,6 @@ import { connectDB } from '@/lib/db'
 import Budget from '@/models/Budget'
 import Transaction from '@/models/Transaction'
 import { Types } from 'mongoose'
-import { startOfMonth, endOfMonth } from 'date-fns'
 
 export async function GET(_req: NextRequest) {
   const session = await auth()
@@ -18,28 +17,25 @@ export async function GET(_req: NextRequest) {
       .populate('categoryId', 'name icon color')
       .lean()
 
-    const now = new Date()
-    const spentAgg = await Transaction.aggregate([
-      {
-        $match: {
-          userId,
-          date: { $gte: startOfMonth(now), $lte: endOfMonth(now) },
-          type: 'expense',
+    const enriched = await Promise.all(budgets.map(async (b) => {
+      const catId = (b.categoryId as unknown as { _id: Types.ObjectId })?._id
+      const [result] = await Transaction.aggregate([
+        {
+          $match: {
+            userId,
+            ...(catId && { categoryId: catId }),
+            date: { $gte: new Date(b.startDate), $lte: new Date(b.endDate) },
+            type: 'expense',
+          },
         },
-      },
-      { $group: { _id: '$categoryId', spentAmount: { $sum: '$amount' } } },
-    ])
-    const spentMap = new Map(spentAgg.map((s) => [s._id.toString(), s.spentAmount]))
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ])
+      const spentAmount = result?.total ?? 0
+      const percentageUsed = b.limit > 0 ? (spentAmount / b.limit) * 100 : 0
+      return { ...b, spentAmount, percentageUsed }
+    }))
 
-    const alerts = budgets
-      .map((b) => {
-        const catId = (b.categoryId as unknown as { _id: Types.ObjectId })?._id?.toString() ?? ''
-        const spentAmount = spentMap.get(catId) ?? 0
-        const percentageUsed = b.limit > 0 ? (spentAmount / b.limit) * 100 : 0
-        return { ...b, spentAmount, percentageUsed }
-      })
-      .filter((b) => b.percentageUsed >= b.alertThreshold)
-
+    const alerts = enriched.filter((b) => b.percentageUsed >= b.alertThreshold)
     return NextResponse.json({ data: alerts })
   } catch (err) {
     console.error('[budget alerts]', err)

@@ -22,13 +22,13 @@ export function BudgetCard({ budget, currency = 'USD', onRefetch }: BudgetCardPr
   const [deleting, setDeleting] = useState(false)
 
   const pct = Math.min(100, budget.percentageUsed ?? 0)
-  const cat = budget.category as unknown as { icon?: string; name?: string }
+  const cat = budget.category
   const daysLeft = differenceInDays(new Date(budget.endDate), new Date())
 
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/budgets/${(budget as unknown as { _id: string })._id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/budgets/${budget._id}`, { method: 'DELETE' })
       if (!res.ok) { showToast.error('Failed to delete budget'); return }
       showToast.success('Budget deleted')
       setShowDelete(false)

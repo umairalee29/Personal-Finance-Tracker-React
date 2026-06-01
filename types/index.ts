@@ -70,6 +70,7 @@ export interface ITransaction {
 }
 
 export interface IBudget {
+  _id?: string
   id: string
   userId: string
   categoryId: string

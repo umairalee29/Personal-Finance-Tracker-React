@@ -6,7 +6,7 @@ import { useBudgets } from '@/hooks/useBudgets'
 import { BudgetCard } from '@/components/budgets/BudgetCard'
 import { BudgetForm } from '@/components/budgets/BudgetForm'
 import { Modal } from '@/components/ui/Modal'
-import { SkeletonCard } from '@/components/ui/Skeleton'
+import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton'
 import { formatMonthYear } from '@/lib/formatters'
 
 function EmptyState() {
@@ -29,7 +29,7 @@ function EmptyState() {
 export default function BudgetsPage() {
   const { data: session } = useSession()
   const currency = session?.user?.currency ?? 'USD'
-  const { budgets, alerts, isLoading, refetch } = useBudgets()
+  const { budgets, alerts, isLoading, error, refetch } = useBudgets()
   const [showCreate, setShowCreate] = useState(false)
 
   return (
@@ -40,14 +40,26 @@ export default function BudgetsPage() {
           <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-slate-100">
             {formatMonthYear(new Date())} Budgets
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {budgets.length} budget{budgets.length !== 1 ? 's' : ''} active
-          </p>
+          {isLoading
+            ? <Skeleton className="h-4 w-32 mt-1" />
+            : <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{budgets.length} budget{budgets.length !== 1 ? 's' : ''} active</p>
+          }
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary">
           + New Budget
         </button>
       </div>
+
+      {/* Error state */}
+      {error && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>{error}</span>
+          <button onClick={refetch} className="ml-auto text-xs font-medium underline underline-offset-2 hover:no-underline">Retry</button>
+        </div>
+      )}
 
       {/* Alert banner */}
       {alerts.length > 0 && (
@@ -77,7 +89,7 @@ export default function BudgetsPage() {
           ? <EmptyState />
           : budgets.map((b) => (
               <BudgetCard
-                key={String((b as unknown as { _id: string })._id)}
+                key={String(b._id)}
                 budget={b}
                 currency={currency}
                 onRefetch={refetch}
