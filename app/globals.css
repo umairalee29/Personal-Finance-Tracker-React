@@ -56,7 +56,7 @@
 
   /* Progress bar transition */
   .progress-bar {
-    @apply h-2 rounded-full transition-all duration-700 ease-out;
+    @apply h-full rounded-full transition-all duration-700 ease-out;
   }
 
   /* Input base style */
