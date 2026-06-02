@@ -8,10 +8,10 @@ import { BudgetForm } from '@/components/budgets/BudgetForm'
 import { showToast } from '@/components/ui/Toast'
 import { formatCurrency, getProgressColor } from '@/lib/formatters'
 import { differenceInDays } from 'date-fns'
-import type { IBudget } from '@/types'
+import type { BudgetWithSpent } from '@/hooks/useBudgets'
 
 interface BudgetCardProps {
-  budget: IBudget & { spentAmount: number; remainingAmount: number; percentageUsed: number }
+  budget: BudgetWithSpent
   currency?: string
   onRefetch: () => void
 }

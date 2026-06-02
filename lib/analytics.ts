@@ -1,6 +1,7 @@
 import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, eachDayOfInterval, format, subDays, startOfDay, startOfWeek, subWeeks } from 'date-fns'
 import { Types } from 'mongoose'
 import type { PipelineStage } from 'mongoose'
+import Transaction from '@/models/Transaction'
 
 // ─── Summary Pipeline ────────────────────────────────────────────────────────
 
@@ -232,28 +233,47 @@ export function buildHeatmapPipeline(userId: string, year: number): PipelineStag
   ] as PipelineStage[]
 }
 
-// ─── Budget Aggregation ───────────────────────────────────────────────────────
+// ─── Budget Enrichment ────────────────────────────────────────────────────────
 
-export function buildBudgetSpentPipeline(userId: string): PipelineStage[] {
-  const userObjectId = new Types.ObjectId(userId)
-  const now = new Date()
-  const monthStart = startOfMonth(now)
-  const monthEnd = endOfMonth(now)
-  return [
-    {
-      $match: {
-        userId: userObjectId,
-        date: { $gte: monthStart, $lte: monthEnd },
-        type: 'expense',
-      },
-    },
-    {
-      $group: {
-        _id: '$categoryId',
-        spentAmount: { $sum: '$amount' },
-      },
-    },
-  ]
+interface RawBudgetLean {
+  _id: Types.ObjectId
+  limit: number
+  startDate: Date
+  endDate: Date
+  alertThreshold: number
+  categoryId: unknown
+  [key: string]: unknown
+}
+
+export async function enrichBudgetsWithSpending<T extends RawBudgetLean>(
+  budgets: T[],
+  userId: Types.ObjectId
+) {
+  return Promise.all(
+    budgets.map(async (b) => {
+      const catId = (b.categoryId as { _id: Types.ObjectId } | null)?._id
+      const [result] = await Transaction.aggregate([
+        {
+          $match: {
+            userId,
+            ...(catId && { categoryId: catId }),
+            date: { $gte: new Date(b.startDate), $lte: new Date(b.endDate) },
+            type: 'expense',
+          },
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ])
+      const spentAmount = result?.total ?? 0
+      const { categoryId, ...rest } = b
+      return {
+        ...rest,
+        category: categoryId,
+        spentAmount,
+        remainingAmount: Math.max(0, b.limit - spentAmount),
+        percentageUsed: b.limit > 0 ? (spentAmount / b.limit) * 100 : 0,
+      }
+    })
+  )
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
