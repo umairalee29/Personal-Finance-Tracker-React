@@ -32,7 +32,8 @@ export async function GET(_req: NextRequest) {
       ])
       const spentAmount = result?.total ?? 0
       const percentageUsed = b.limit > 0 ? (spentAmount / b.limit) * 100 : 0
-      return { ...b, spentAmount, percentageUsed }
+      const { categoryId, ...rest } = b
+      return { ...rest, category: categoryId, spentAmount, percentageUsed }
     }))
 
     const alerts = enriched.filter((b) => b.percentageUsed >= b.alertThreshold)

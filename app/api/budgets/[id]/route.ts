@@ -41,8 +41,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   if (!Types.ObjectId.isValid(params.id)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
 
-  await connectDB()
-  const deleted = await Budget.findOneAndDelete({ _id: params.id, userId: session.user.id })
-  if (!deleted) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json({ message: 'Deleted' })
+  try {
+    await connectDB()
+    const deleted = await Budget.findOneAndDelete({ _id: params.id, userId: session.user.id })
+    if (!deleted) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return NextResponse.json({ message: 'Deleted' })
+  } catch (err) {
+    console.error('[budget DELETE]', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

@@ -33,8 +33,10 @@ export async function GET(_req: NextRequest) {
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ])
       const spentAmount = result?.total ?? 0
+      const { categoryId, ...rest } = b
       return {
-        ...b,
+        ...rest,
+        category: categoryId,
         spentAmount,
         remainingAmount: Math.max(0, b.limit - spentAmount),
         percentageUsed: b.limit > 0 ? (spentAmount / b.limit) * 100 : 0,
