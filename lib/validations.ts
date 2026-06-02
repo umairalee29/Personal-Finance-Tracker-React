@@ -50,22 +50,22 @@ export const TransactionUpdateSchema = TransactionSchema.partial()
 
 // ─── Budgets ──────────────────────────────────────────────────────────────────
 
-export const BudgetSchema = z
-  .object({
-    categoryId: z.string().min(1, 'Category is required'),
-    name: z.string().min(1, 'Name is required').max(100),
-    limit: z.coerce.number().positive('Limit must be positive'),
-    period: z.enum(['weekly', 'monthly', 'yearly']),
-    startDate: z.coerce.date(),
-    endDate: z.coerce.date(),
-    alertThreshold: z.coerce.number().min(50).max(100).default(80),
-  })
-  .refine((d) => d.endDate > d.startDate, {
-    message: 'End date must be after start date',
-    path: ['endDate'],
-  })
+const BudgetBaseSchema = z.object({
+  categoryId: z.string().min(1, 'Category is required'),
+  name: z.string().min(1, 'Name is required').max(100),
+  limit: z.coerce.number().positive('Limit must be positive'),
+  period: z.enum(['weekly', 'monthly', 'yearly']),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  alertThreshold: z.coerce.number().min(50).max(100).default(80),
+})
 
-export const BudgetUpdateSchema = BudgetSchema.partial()
+export const BudgetSchema = BudgetBaseSchema.refine(
+  (d) => d.endDate > d.startDate,
+  { message: 'End date must be after start date', path: ['endDate'] }
+)
+
+export const BudgetUpdateSchema = BudgetBaseSchema.partial()
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
