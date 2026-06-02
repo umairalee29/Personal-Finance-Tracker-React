@@ -157,6 +157,7 @@ export function BudgetForm({ budget, currency = 'USD', onSuccess, onCancel }: Bu
               />
             )}
           />
+          {errors.endDate && <p className="mt-1 text-xs text-rose-600">{errors.endDate.message}</p>}
         </div>
       </div>
 
