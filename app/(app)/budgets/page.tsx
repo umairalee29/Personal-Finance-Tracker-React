@@ -43,6 +43,8 @@ export default function BudgetsPage() {
   const totalSpent = budgets.reduce((sum, b) => sum + (b.spentAmount ?? 0), 0)
   const totalRemaining = budgets.reduce((sum, b) => sum + (b.remainingAmount ?? 0), 0)
 
+  const sortedBudgets = [...budgets].sort((a, b) => (b.percentageUsed ?? 0) - (a.percentageUsed ?? 0))
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -128,9 +130,9 @@ export default function BudgetsPage() {
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading
           ? Array.from({ length: 6 }, (_, i) => <SkeletonCard key={i} />)
-          : budgets.length === 0
+          : sortedBudgets.length === 0
           ? <EmptyState onAdd={() => setShowCreate(true)} />
-          : budgets.map((b) => (
+          : sortedBudgets.map((b) => (
               <BudgetCard
                 key={String(b._id)}
                 budget={b}

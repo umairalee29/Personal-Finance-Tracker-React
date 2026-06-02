@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { BudgetSchema, type BudgetInput } from '@/lib/validations'
 import { showToast } from '@/components/ui/Toast'
-import { format } from 'date-fns'
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import type { ICategory, IBudget } from '@/types'
 
 interface BudgetFormProps {
@@ -32,6 +32,7 @@ export function BudgetForm({ budget, currency = 'USD', onSuccess, onCancel }: Bu
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<BudgetInput>({
     resolver: zodResolver(BudgetSchema),
@@ -54,12 +55,30 @@ export function BudgetForm({ budget, currency = 'USD', onSuccess, onCancel }: Bu
   })
 
   const alertThreshold = watch('alertThreshold')
+  const period = watch('period')
+  const isFirstRender = useRef(true)
 
   useEffect(() => {
     fetch('/api/categories')
       .then((r) => r.json())
       .then((j) => setCategories(j.data ?? []))
   }, [])
+
+  useEffect(() => {
+    if (isEdit) return
+    if (isFirstRender.current) { isFirstRender.current = false; return }
+    const n = new Date()
+    if (period === 'weekly') {
+      setValue('startDate', startOfWeek(n, { weekStartsOn: 1 }))
+      setValue('endDate', endOfWeek(n, { weekStartsOn: 1 }))
+    } else if (period === 'monthly') {
+      setValue('startDate', startOfMonth(n))
+      setValue('endDate', endOfMonth(n))
+    } else if (period === 'yearly') {
+      setValue('startDate', startOfYear(n))
+      setValue('endDate', endOfYear(n))
+    }
+  }, [period, isEdit, setValue])
 
   const onSubmit = async (data: BudgetInput) => {
     setLoading(true)

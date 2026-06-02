@@ -23,8 +23,11 @@ export function BudgetCard({ budget, currency = 'USD', onRefetch }: BudgetCardPr
 
   const pct = Math.min(100, budget.percentageUsed ?? 0)
   const cat = budget.category
-  const daysLeft = differenceInDays(new Date(budget.endDate), new Date())
+  const now = new Date()
+  const daysLeft = differenceInDays(new Date(budget.endDate), now)
+  const daysUntilStart = differenceInDays(new Date(budget.startDate), now)
   const isExpired = daysLeft <= 0
+  const isFuture = daysUntilStart > 0
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -116,7 +119,7 @@ export function BudgetCard({ budget, currency = 'USD', onRefetch }: BudgetCardPr
             {formatCurrency(budget.remainingAmount ?? 0, currency)} remaining
           </span>
           <span>
-            {daysLeft > 0 ? `${daysLeft} days left` : 'Period ended'}
+            {isExpired ? 'Period ended' : isFuture ? `Starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}` : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`}
           </span>
         </div>
 
