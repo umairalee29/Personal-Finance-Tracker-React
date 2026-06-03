@@ -72,7 +72,16 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-slate-100">Analytics</h2>
+      <div>
+        <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-slate-100">Analytics</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          {tab === 'heatmap'
+            ? `Daily spending — ${heatmapYear}`
+            : tab === 'trends'
+            ? `${trendPeriod === '3m' ? 'Last 3 months' : trendPeriod === '6m' ? 'Last 6 months' : 'Last 12 months'}`
+            : RANGE_OPTIONS.find((r) => r.value === range)?.label}
+        </p>
+      </div>
 
       {/* Tab nav */}
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 w-fit">
@@ -275,7 +284,7 @@ export default function AnalyticsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...trends].reverse().map((t) => (
+                    {trends.map((t) => (
                       <tr key={t.month} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                         <td className="py-2.5 px-3 font-medium text-slate-700 dark:text-slate-300">{t.month}</td>
                         <td className="py-2.5 px-3 text-right tabular text-emerald-600 dark:text-emerald-400">{formatCurrency(t.income, currency)}</td>
