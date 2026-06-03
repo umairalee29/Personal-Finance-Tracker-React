@@ -151,11 +151,16 @@ export default function AnalyticsPage() {
           )}
 
           {/* MoM change */}
-          {!summaryLoading && summary && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Month-over-Month Change</CardTitle>
-              </CardHeader>
+          <Card>
+            <CardHeader>
+              <CardTitle>Month-over-Month Change</CardTitle>
+            </CardHeader>
+            {summaryLoading ? (
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+            ) : summary ? (
               <div className="flex items-center gap-4">
                 <div className={`text-3xl font-heading font-bold tabular ${getDeltaColor(-(summary.expenseChangePercent))}`}>
                   {formatDelta(-(summary.expenseChangePercent))}
@@ -164,8 +169,8 @@ export default function AnalyticsPage() {
                   vs previous period expenses ({formatCurrency(summary.previousMonthExpenses, currency)})
                 </div>
               </div>
-            </Card>
-          )}
+            ) : null}
+          </Card>
 
           {/* Top categories */}
           <Card>
@@ -228,9 +233,19 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle>Income vs Expenses</CardTitle>
             </CardHeader>
-            {trendsLoading
-              ? <Skeleton className="h-72" />
-              : <TrendLineChart data={trends} currency={currency} height={300} />}
+            {trendsLoading ? (
+              <Skeleton className="h-72" />
+            ) : trends.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-72 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No trend data available</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Add some transactions to see your income and expense trends</p>
+              </div>
+            ) : (
+              <TrendLineChart data={trends} currency={currency} height={300} />
+            )}
           </Card>
 
           {/* Monthly breakdown table */}
