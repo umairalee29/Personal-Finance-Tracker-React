@@ -156,17 +156,29 @@ export default function AnalyticsPage() {
               <CardTitle>Month-over-Month Change</CardTitle>
             </CardHeader>
             {summaryLoading ? (
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-4 w-48" />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3"><Skeleton className="h-9 w-20" /><Skeleton className="h-4 w-36" /></div>
+                <div className="flex items-center gap-3"><Skeleton className="h-9 w-20" /><Skeleton className="h-4 w-36" /></div>
               </div>
             ) : summary ? (
-              <div className="flex items-center gap-4">
-                <div className={`text-3xl font-heading font-bold tabular ${getDeltaColor(-(summary.expenseChangePercent))}`}>
-                  {formatDelta(-(summary.expenseChangePercent))}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={`text-3xl font-heading font-bold tabular ${getDeltaColor(-(summary.expenseChangePercent))}`}>
+                    {formatDelta(-(summary.expenseChangePercent))}
+                  </div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    expenses vs prior period<br />
+                    <span className="tabular">{formatCurrency(summary.previousMonthExpenses, currency)}</span>
+                  </div>
                 </div>
-                <div className="text-sm text-slate-500 dark:text-slate-400">
-                  vs previous period expenses ({formatCurrency(summary.previousMonthExpenses, currency)})
+                <div className="flex items-center gap-3">
+                  <div className={`text-3xl font-heading font-bold tabular ${getDeltaColor(summary.incomeChangePercent)}`}>
+                    {formatDelta(summary.incomeChangePercent)}
+                  </div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    income vs prior period<br />
+                    <span className="tabular">{formatCurrency(summary.previousMonthIncome, currency)}</span>
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -338,19 +350,25 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setHeatmapYear((y) => y - 1)}
-              className="btn-secondary text-sm px-3 py-1.5"
+              className="btn-secondary p-2"
+              aria-label="Previous year"
             >
-              ←
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
             </button>
             <span className="font-heading font-semibold text-slate-900 dark:text-slate-100 text-lg w-16 text-center">
               {heatmapYear}
             </span>
             <button
               onClick={() => setHeatmapYear((y) => Math.min(y + 1, new Date().getFullYear()))}
-              className="btn-secondary text-sm px-3 py-1.5"
+              className="btn-secondary p-2"
               disabled={heatmapYear >= new Date().getFullYear()}
+              aria-label="Next year"
             >
-              →
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
             </button>
           </div>
 
