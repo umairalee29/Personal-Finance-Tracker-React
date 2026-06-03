@@ -157,8 +157,8 @@ export default function AnalyticsPage() {
                 <CardTitle>Month-over-Month Change</CardTitle>
               </CardHeader>
               <div className="flex items-center gap-4">
-                <div className={`text-3xl font-heading font-bold tabular ${getDeltaColor(-(summary.monthOverMonthChange))}`}>
-                  {formatDelta(-(summary.monthOverMonthChange))}
+                <div className={`text-3xl font-heading font-bold tabular ${getDeltaColor(-(summary.expenseChangePercent))}`}>
+                  {formatDelta(-(summary.expenseChangePercent))}
                 </div>
                 <div className="text-sm text-slate-500 dark:text-slate-400">
                   vs previous period expenses ({formatCurrency(summary.previousMonthExpenses, currency)})

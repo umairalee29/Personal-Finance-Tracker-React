@@ -105,9 +105,9 @@ export interface IAnalyticsSummary {
   netSavings: number
   savingsRate: number
   topCategories: ITopCategory[]
-  monthOverMonthChange: number
+  expenseChangePercent: number
   previousMonthExpenses: number
-  incomeMonthOverMonthChange: number
+  incomeChangePercent: number
   previousMonthIncome: number
 }
 

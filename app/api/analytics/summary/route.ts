@@ -64,9 +64,9 @@ export async function GET(req: NextRequest) {
         netSavings,
         savingsRate,
         topCategories,
-        monthOverMonthChange,
+        expenseChangePercent: monthOverMonthChange,
         previousMonthExpenses: prevExpenses,
-        incomeMonthOverMonthChange,
+        incomeChangePercent: incomeMonthOverMonthChange,
         previousMonthIncome: prevIncome,
       },
     })
