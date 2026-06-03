@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { TrendLineChart } from '@/components/charts/TrendLineChart'
 import { SpendingPieChart } from '@/components/charts/SpendingPieChart'
 import { HeatmapCalendar } from '@/components/charts/HeatmapCalendar'
+import { RangeSelector } from '@/components/ui/RangeSelector'
 import { formatCurrency, formatPercentage, getDeltaColor, formatDelta } from '@/lib/formatters'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 
@@ -94,19 +95,7 @@ export default function AnalyticsPage() {
       {/* Overview Tab */}
       {tab === 'overview' && (
         <div className="space-y-6">
-          {/* Range selector */}
-          <div className="flex gap-2">
-            {RANGE_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setRange(value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
-                  ${range === value ? 'bg-primary text-white' : 'btn-secondary'}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <RangeSelector options={RANGE_OPTIONS} value={range} onChange={setRange} />
 
           {summaryLoading ? (
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -280,18 +269,7 @@ export default function AnalyticsPage() {
       {/* Categories Tab */}
       {tab === 'categories' && (
         <div className="space-y-6">
-          <div className="flex gap-2">
-            {RANGE_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setRange(value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
-                  ${range === value ? 'bg-primary text-white' : 'btn-secondary'}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <RangeSelector options={RANGE_OPTIONS} value={range} onChange={setRange} />
 
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
