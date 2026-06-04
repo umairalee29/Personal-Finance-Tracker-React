@@ -149,7 +149,7 @@ function CategoryManager() {
       {categories.length === 0 ? (
         <p className="text-sm text-slate-400 py-4 text-center">No custom categories yet</p>
       ) : (
-        <div className="overflow-y-auto max-h-64 space-y-2 pr-1">
+        <div className="overflow-y-auto max-h-[288px] space-y-2 pr-1">
           {categories.map((cat) => (
             <div key={cat._id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
               <span className="text-xl">{cat.icon}</span>
