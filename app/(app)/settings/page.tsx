@@ -82,7 +82,7 @@ function CategoryManager() {
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryInput>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CategoryInput>({
     resolver: zodResolver(CategorySchema),
     defaultValues: { group: 'other', icon: '💡', color: '#94a3b8' },
   })
@@ -163,7 +163,12 @@ function CategoryManager() {
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Color (hex)</label>
               <div className="flex gap-2">
-                <input {...register('color')} type="color" className="w-10 h-10 rounded cursor-pointer border-0" />
+                <input
+                  type="color"
+                  value={watch('color')}
+                  onChange={(e) => setValue('color', e.target.value, { shouldValidate: true })}
+                  className="w-10 h-10 rounded cursor-pointer border-0"
+                />
                 <input {...register('color')} className="input flex-1" placeholder="#94a3b8" />
               </div>
               {errors.color && <p className="mt-1 text-xs text-rose-600">{errors.color.message}</p>}
