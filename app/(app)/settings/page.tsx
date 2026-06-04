@@ -18,14 +18,24 @@ function ProfileSection() {
   const { data: session, update } = useSession()
   const [loading, setLoading] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(ProfileUpdateSchema),
     defaultValues: {
-      name: session?.user?.name ?? '',
-      currency: session?.user?.currency ?? 'USD',
-      monthlyIncomeGoal: session?.user?.monthlyIncomeGoal ?? 0,
+      name: '',
+      currency: 'USD',
+      monthlyIncomeGoal: 0,
     },
   })
+
+  useEffect(() => {
+    if (session?.user) {
+      reset({
+        name: session.user.name ?? '',
+        currency: session.user.currency ?? 'USD',
+        monthlyIncomeGoal: session.user.monthlyIncomeGoal ?? 0,
+      })
+    }
+  }, [session, reset])
 
   const onSubmit = async (data: Record<string, unknown>) => {
     setLoading(true)
