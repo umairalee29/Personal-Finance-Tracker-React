@@ -149,7 +149,7 @@ function CategoryManager() {
       {categories.length === 0 ? (
         <p className="text-sm text-slate-400 py-4 text-center">No custom categories yet</p>
       ) : (
-        <div className="space-y-2">
+        <div className="overflow-y-auto max-h-64 space-y-2 pr-1">
           {categories.map((cat) => (
             <div key={cat._id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
               <span className="text-xl">{cat.icon}</span>
@@ -300,10 +300,12 @@ function DataSection() {
 
 export default function SettingsPage() {
   return (
-    <div className="max-w-2xl space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-slate-100">Settings</h2>
-      <ProfileSection />
-      <CategoryManager />
+      <div className="grid lg:grid-cols-2 gap-6 items-start">
+        <ProfileSection />
+        <CategoryManager />
+      </div>
       <DataSection />
     </div>
   )
