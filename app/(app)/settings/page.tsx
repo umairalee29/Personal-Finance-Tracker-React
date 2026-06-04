@@ -5,8 +5,10 @@ import { useSession } from 'next-auth/react'
 import { signOut } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ProfileUpdateSchema } from '@/lib/validations'
-import { CategorySchema, type CategoryInput } from '@/lib/validations'
+import { ProfileUpdateSchema, CategorySchema, type CategoryInput } from '@/lib/validations'
+import type { z } from 'zod'
+
+type ProfileInput = z.infer<typeof ProfileUpdateSchema>
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { showToast } from '@/components/ui/Toast'
@@ -37,7 +39,7 @@ function ProfileSection() {
     }
   }, [session, reset])
 
-  const onSubmit = async (data: Record<string, unknown>) => {
+  const onSubmit = async (data: ProfileInput) => {
     setLoading(true)
     try {
       const res = await fetch('/api/auth/profile', {
