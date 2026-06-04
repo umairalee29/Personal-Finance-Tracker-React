@@ -151,7 +151,7 @@ function CategoryManager() {
       ) : (
         <div className="space-y-2">
           {categories.map((cat) => (
-            <div key={String((cat as unknown as { _id: string })._id)} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+            <div key={cat._id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
               <span className="text-xl">{cat.icon}</span>
               <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ background: cat.color }} />
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex-1">{cat.name}</span>
