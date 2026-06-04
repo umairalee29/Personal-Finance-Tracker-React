@@ -7,12 +7,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ProfileUpdateSchema, CategorySchema, type CategoryInput } from '@/lib/validations'
 import type { z } from 'zod'
-
-type ProfileInput = z.infer<typeof ProfileUpdateSchema>
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { showToast } from '@/components/ui/Toast'
 import type { ICategory } from '@/types'
+
+type ProfileInput = z.infer<typeof ProfileUpdateSchema>
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD']
 
@@ -91,6 +92,8 @@ function ProfileSection() {
 
 function CategoryManager() {
   const [categories, setCategories] = useState<ICategory[]>([])
+  const [fetchLoading, setFetchLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<ICategory | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -101,11 +104,18 @@ function CategoryManager() {
     defaultValues: { group: 'other', icon: '💡', color: '#94a3b8' },
   })
 
-  const fetchCats = useCallback(() =>
+  const fetchCats = useCallback(() => {
+    setFetchLoading(true)
     fetch('/api/categories')
       .then((r) => r.json())
-      .then((j) => setCategories((j.data ?? []).filter((c: ICategory) => !c.isDefault)))
-  , [])
+      .then((j) => {
+        if (j.error) throw new Error(j.error)
+        setCategories((j.data ?? []).filter((c: ICategory) => !c.isDefault))
+        setFetchError(null)
+      })
+      .catch((e: Error) => setFetchError(e.message ?? 'Failed to load categories'))
+      .finally(() => setFetchLoading(false))
+  }, [])
 
   useEffect(() => { fetchCats() }, [fetchCats])
 
@@ -148,7 +158,16 @@ function CategoryManager() {
         <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">+ Add</button>
       </CardHeader>
 
-      {categories.length === 0 ? (
+      {fetchLoading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
+        </div>
+      ) : fetchError ? (
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-sm text-rose-600 dark:text-rose-400">
+          <span>{fetchError}</span>
+          <button onClick={fetchCats} className="text-xs font-medium underline underline-offset-2 hover:no-underline ml-3">Retry</button>
+        </div>
+      ) : categories.length === 0 ? (
         <p className="text-sm text-slate-400 py-4 text-center">No custom categories yet</p>
       ) : (
         <div className="overflow-y-auto max-h-[288px] space-y-2 pr-1">
