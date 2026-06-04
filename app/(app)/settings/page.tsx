@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { signOut } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
@@ -97,12 +97,13 @@ function CategoryManager() {
     defaultValues: { group: 'other', icon: '💡', color: '#94a3b8' },
   })
 
-  const fetchCats = () =>
+  const fetchCats = useCallback(() =>
     fetch('/api/categories')
       .then((r) => r.json())
       .then((j) => setCategories((j.data ?? []).filter((c: ICategory) => !c.isDefault)))
+  , [])
 
-  useEffect(() => { fetchCats() }, [])
+  useEffect(() => { fetchCats() }, [fetchCats])
 
   const onCreate = async (data: CategoryInput) => {
     setLoading(true)
