@@ -90,6 +90,8 @@ function ProfileSection() {
 function CategoryManager() {
   const [categories, setCategories] = useState<ICategory[]>([])
   const [showCreate, setShowCreate] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<ICategory | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CategoryInput>({
@@ -123,12 +125,18 @@ function CategoryManager() {
     }
   }
 
-  const onDelete = async (id: string) => {
-    if (!confirm('Delete this category?')) return
-    const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' })
-    if (!res.ok) { showToast.error('Failed to delete category'); return }
-    showToast.success('Category deleted')
-    fetchCats()
+  const onDelete = async () => {
+    if (!deleteTarget?._id) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/categories/${deleteTarget._id}`, { method: 'DELETE' })
+      if (!res.ok) { showToast.error('Failed to delete category'); return }
+      showToast.success('Category deleted')
+      setDeleteTarget(null)
+      fetchCats()
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -149,10 +157,13 @@ function CategoryManager() {
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex-1">{cat.name}</span>
               <span className="text-xs text-slate-400 capitalize">{cat.group}</span>
               <button
-                onClick={() => onDelete(String((cat as unknown as { _id: string })._id))}
-                className="text-rose-500 hover:text-rose-700 text-sm"
+                onClick={() => setDeleteTarget(cat)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                title="Delete"
               >
-                🗑
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           ))}
@@ -198,6 +209,20 @@ function CategoryManager() {
             <button type="submit" disabled={loading} className="btn-primary flex-1">Create</button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Category" size="sm">
+        <div className="p-6">
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            Delete category <strong>&quot;{deleteTarget?.name}&quot;</strong>? This won&apos;t affect existing transactions.
+          </p>
+          <div className="flex gap-3">
+            <button onClick={() => setDeleteTarget(null)} className="btn-secondary flex-1">Cancel</button>
+            <button onClick={onDelete} disabled={deleting} className="btn-danger flex-1">
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </Card>
   )
