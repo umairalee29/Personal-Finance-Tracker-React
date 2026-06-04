@@ -41,12 +41,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   if (!Types.ObjectId.isValid(params.id)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
 
-  await connectDB()
+  try {
+    await connectDB()
 
-  // Only allow deleting non-default user categories
-  const category = await Category.findOne({ _id: params.id, userId: session.user.id, isDefault: false })
-  if (!category) return NextResponse.json({ error: 'Not found or cannot delete default category' }, { status: 404 })
+    const category = await Category.findOne({ _id: params.id, userId: session.user.id, isDefault: false })
+    if (!category) return NextResponse.json({ error: 'Not found or cannot delete default category' }, { status: 404 })
 
-  await category.deleteOne()
-  return NextResponse.json({ message: 'Deleted' })
+    await category.deleteOne()
+    return NextResponse.json({ message: 'Deleted' })
+  } catch (err) {
+    console.error('[category DELETE]', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
