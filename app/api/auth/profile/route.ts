@@ -34,7 +34,12 @@ export async function DELETE(_req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  await connectDB()
-  await User.findByIdAndDelete(session.user.id)
-  return NextResponse.json({ message: 'Account deleted' })
+  try {
+    await connectDB()
+    await User.findByIdAndDelete(session.user.id)
+    return NextResponse.json({ message: 'Account deleted' })
+  } catch (err) {
+    console.error('[profile DELETE]', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
